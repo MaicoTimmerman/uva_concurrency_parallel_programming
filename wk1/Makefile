@@ -1,4 +1,4 @@
-PROGNAME = assign1_1
+PROGNAME = assign1_1.out
 SRCFILES = assign1_1.c file.c timer.c simulate.c
 TARNAME = assign1_1.tgz
 
