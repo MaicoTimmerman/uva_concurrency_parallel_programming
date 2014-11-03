@@ -29,6 +29,12 @@ $(PROGNAME): $(OBJFILES)
 run: $(PROGNAME)
 	prun -v -np 1 $(PROGNAME) $(RUNARGS)
 
+cgdb: $(PROGNAME)
+	cgdb --args $(PROGNAME) $(RUNARGS)
+
+valgrind: $(PROGNAME)
+	valgrind ./$(PROGNAME) $(RUNARGS)
+
 runlocal: $(PROGNAME)
 	./$(PROGNAME) $(RUNARGS)
 

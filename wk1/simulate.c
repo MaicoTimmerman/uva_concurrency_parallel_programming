@@ -6,16 +6,33 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 #include "simulate.h"
 
 
 /* Add any global variables you may need. */
-pthread_t* tid;
+typedef struct args_struct_t {
+    double *old_array;
+    double *current_array;
+    double *next_array;
+    const int i_max;
+} args_struct_t;
+
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+int current_index;
 
 
 /* Add any functions you may need (like a worker) here. */
-
+void *calc_wave(void *s)
+{
+    args_struct_t *args = (args_struct_t*)s;
+    printf("In pthread:\n");
+    printf("p1: %p\n", (void*)args->old_array);
+    printf("p2: %p\n", (void*)args->current_array);
+    printf("p3: %p\n", (void*)args->next_array);
+    return NULL;
+}
 
 /*
  * Executes the entire simulation.
@@ -32,15 +49,34 @@ pthread_t* tid;
 double *simulate(const int i_max, const int t_max, const int num_threads,
         double *old_array, double *current_array, double *next_array)
 {
+    pthread_t p_threads[num_threads];
 
+    /* Struct with arguments for the thread. */
+    args_struct_t args;
+    args.old_array = old_array;
+    args.current_array = current_array;
+    args.next_array = next_array;
 
+    printf("In simulate:\n");
+    printf("p1: %p\n", (void*)old_array);
+    printf("p2: %p\n", (void*)current_array);
+    printf("p3: %p\n", (void*)next_array);
+
+    for (int i = 0; i < num_threads; i++) {
+        pthread_create(&p_threads[i], NULL, calc_wave, (void*)&args);
+    }
 
     /*
      * After each timestep, you should swap the buffers around. Watch out none
      * of the threads actually use the buffers at that time.
      */
 
+    for (int i = 0; i < num_threads; i++) {
+        pthread_join(p_threads[i], NULL);
+    }
+
 
     /* You should return a pointer to the array with the final results. */
+    pthread_mutex_destroy(&lock);
     return current_array;
 }
