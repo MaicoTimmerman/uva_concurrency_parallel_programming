@@ -11,6 +11,7 @@
 
 
 /* Add any global variables you may need. */
+pthread_t* tid;
 
 
 /* Add any functions you may need (like a worker) here. */
