@@ -57,7 +57,7 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
     args.current_array = current_array;
     args.next_array = next_array;
 
-    liveprint(current_array, i_max, t_max, 1);
+    liveprint(current_array, i_max, 1);
 
     printf("In simulate:\n");
     printf("p1: %p\n", (void*)old_array);
@@ -74,7 +74,7 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
      */
 
     /* After Swapping print the current wave */
-    liveprint(current_array, i_max, t_max, 0);
+    liveprint(current_array, i_max, 0);
 
     for (int i = 0; i < num_threads; i++) {
         pthread_join(p_threads[i], NULL);
@@ -86,7 +86,7 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
     return current_array;
 }
 
-void liveprint(double *values, const int i_max, const int t_max, int clear)
+void liveprint(double *values, const int i_max, int clear)
 {
     int lines_amount = 21; //has to be uneven!!
     int altitude = (lines_amount -1) / 2;
@@ -99,11 +99,14 @@ void liveprint(double *values, const int i_max, const int t_max, int clear)
         }
     }
 
+    /* Print the Wave */
     for (int i = altitude; i >= (-1 * altitude); i--) {
         char filler_char = ' ';
         if (i == 0) {
             filler_char = '=';
         }
+
+        /* Still needs to be percentualised, using the highest amplitude value */
         for (int j = 0; j < i_max; j++) {
             if (values[j] == i) {
                 printf("+");
