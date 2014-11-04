@@ -86,7 +86,7 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
     return current_array;
 }
 
-void liveprint(double *values, const int i_max, int clear)
+void liveprint(double *amplitudes, const int i_max, int clear)
 {
     int lines_amount = 21; //has to be uneven!!
     int altitude = (lines_amount -1) / 2;
@@ -108,7 +108,7 @@ void liveprint(double *values, const int i_max, int clear)
 
         /* Still needs to be percentualised, using the highest amplitude value */
         for (int j = 0; j < i_max; j++) {
-            if (values[j] == i) {
+            if (amplitudes[j] == i) {
                 printf("+");
             }
             else {
