@@ -138,3 +138,6 @@ sympy-plots-for-*.tex/
 *.x86_64
 *.hex
 
+# swap
+*.swp
+
