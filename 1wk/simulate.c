@@ -57,6 +57,8 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
     args.current_array = current_array;
     args.next_array = next_array;
 
+    liveprint(current_array, i_max, t_max, 1);
+
     printf("In simulate:\n");
     printf("p1: %p\n", (void*)old_array);
     printf("p2: %p\n", (void*)current_array);
@@ -71,6 +73,9 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
      * of the threads actually use the buffers at that time.
      */
 
+    /* After Swapping print the current wave */
+    liveprint(current_array, i_max, t_max, 0);
+
     for (int i = 0; i < num_threads; i++) {
         pthread_join(p_threads[i], NULL);
     }
@@ -79,4 +84,33 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
     /* You should return a pointer to the array with the final results. */
     pthread_mutex_destroy(&lock);
     return current_array;
+}
+
+void liveprint(double *values, const int i_max, const int t_max, int clear)
+{
+    int lines_amount = 21; //has to be uneven!!
+    int altitude = (lines_amount -1) / 2;
+
+
+    /* Clear lines if not first time printing */
+    if (clear) {
+        for (int i = 0; i < lines_amount; i++) {
+            printf("\e[1A");
+        }
+    }
+
+    for (int i = altitude; i >= (-1 * altitude); i--) {
+        char filler_char = ' ';
+        if (i == 0) {
+            filler_char = '=';
+        }
+        for (int j = 0; j < i_max; j++) {
+            if (values[j] == i) {
+                printf("+");
+            }
+            else {
+                printf("%c", filler_char);
+            }
+        }
+    }
 }
