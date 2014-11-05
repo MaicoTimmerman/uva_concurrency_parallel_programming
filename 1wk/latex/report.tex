@@ -104,11 +104,11 @@
 \section{Introduction}
 
 For this assignment a parallel programming solution needs to be implemented for
-two problems, wave equation simulation and Sieve of Eratosthenes. For the wave
-simulation the user can specify the amount of wave amplitude points, the amount
-of steps it needs to simulate and the desired amount of threads. The program
-then calculates all the wave values until the it has done the specified amount
-of steps.
+two problems, a wave equation simulation and the Sieve of Eratosthenes. For the
+wave simulation the user can specify the amount of wave amplitude points, the
+amount of steps it needs to simulate and the desired amount of threads. The
+program then calculates all the wave values until it has done the specified
+amount of steps.
 
 The Sieve of Eratosthenes <...>
 
@@ -118,19 +118,25 @@ The Sieve of Eratosthenes <...>
 First the specified amount of threads need to be created, these threads will
 then all start executing the function $calc\_wave$. $calc\_wave$ first checks if
 there is an amplitude point in the row $t+1$ that needs calculation. This check
-is done in order, using a variable $current\_index$ that keeps track of which
-amplitude point is the latest one currently being calculated. $current\_index$
-is mutex locked to check and increment it before starting calculation on that
+is done in ascending order, using a variable $current\_index$ that keeps track
+of which amplitude point was the last one being calculated. $current\_index$ is
+mutex locked to check and increment it before starting calculation on that
 particular amplitude point, so that no two threads waste their time calculating
 the same point. Once the $current\_index$ reaches the last point in the wave,
 $i\_max$, threads will wait until all other threads finish their calculations.
 When the row is completely finished the $current\_index$ is reset and the rows
 are rotated, after which an event is generated telling all threads to restart
-their routine.
+their routine. As an extra feature we added the option to also print the state
+of the wave for each row, thus animating the flow of the wave.
+
+\subsection{Sieve of Eratosthenes}
+
 
 
 \section{Results}
 
+
+\section{Discussion}
 
 % =================================== REFERENCES ===================================
 
