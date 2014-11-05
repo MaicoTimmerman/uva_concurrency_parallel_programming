@@ -9,6 +9,7 @@
 #include <pthread.h>
 
 #include "simulate.h"
+#include "file.h"
 
 
 typedef struct args_t {
