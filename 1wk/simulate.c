@@ -11,28 +11,35 @@
 #include "simulate.h"
 
 
-pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_t *g_p_threads;
 double *g_old_array;
 double *g_current_array;
 double *g_next_array;
-int g_current_index;
-
 
 /* Add any functions you may need (like a worker) here. */
+void *calc_wave(void *s);
+int init_threads(const int num_threads);
+int clean_threads(const int num_threads);
+
+
+/*
+ * Function to be threaded
+ */
 void *calc_wave(void *s)
 {
-    printf("In pthread:\n");
-    printf("p1: %p\n", (void*)g_old_array);
-    printf("p2: %p\n", (void*)g_current_array);
-    printf("p3: %p\n", (void*)g_next_array);
+    int *thread_int = (int*)s;
+    printf("Me thread #%d\n", *thread_int);
+    printf("p1: %p\n", g_old_array);
+    printf("p2: %p\n", g_current_array);
+    printf("p3: %p\n", g_next_array);
     return NULL;
 }
 
 /*
  * Initialize all threads and check if all threads have been made successfully.
  */
-int init_threads(const int num_threads) {
+int init_threads(const int num_threads)
+{
 
     /* Alloc enough space for the buffers */
     if (!(g_p_threads = (pthread_t *)malloc(sizeof(pthread_t) * num_threads))) {
@@ -42,7 +49,9 @@ int init_threads(const int num_threads) {
 
     /* Initialize the threads */
     for (int i = 0; i < num_threads; i++) {
-        if (pthread_create(&g_p_threads[i], NULL, calc_wave, NULL)) {
+        int *arg = (int*)malloc(sizeof(*arg));
+        *arg = i;
+        if (pthread_create(&g_p_threads[i], NULL, calc_wave, (void*)arg)) {
             fprintf(stderr, "pthread_create failed\n");
             return 1;
         }
@@ -53,7 +62,8 @@ int init_threads(const int num_threads) {
 /*
  * Clean all the threads used in the program.
  */
-int clean_threads(const int num_threads) {
+int clean_threads(const int num_threads)
+{
 
     /* Join all the threads */
     for (int i = 0; i < num_threads; i++) {
@@ -81,36 +91,40 @@ int clean_threads(const int num_threads) {
 double *simulate(const int i_max, const int t_max, const int num_threads,
         double *old_array, double *current_array, double *next_array)
 {
+
+    int i_current = 0;
+    double *temp;
+
     /* Struct with arguments for the thread. */
     g_old_array = old_array;
     g_current_array = current_array;
     g_next_array = next_array;
 
-    /* Thread creation */
-    if (init_threads(num_threads)) {
-        fprintf(stderr, "An error happened while initializing threads.\n");
-        exit(EXIT_FAILURE);
+
+    /* Loop through all rows */
+    while (i_current < 5) {
+
+        /* Thread creation */
+        if (init_threads(num_threads)) {
+            fprintf(stderr, "An error happened while initializing threads.\n");
+            exit(EXIT_FAILURE);
+        }
+
+        temp = g_old_array;
+        g_old_array = g_current_array;
+        g_current_array = g_next_array;
+        g_next_array = temp;
+
+
+        /* You should return a pointer to the array with the final results. */
+        if (clean_threads(num_threads)) {
+            fprintf(stderr, "An error happened while cleaning threads.\n");
+            exit(EXIT_FAILURE);
+        }
+
+        i_current++;
     }
 
-    /* liveprint(current_array, i_max, 1); */
-
-    /*
-     * After each timestep, you should swap the buffers around. Watch out none
-     * of the threads actually use the buffers at that time.
-     */
-
-
-    /* After Swapping print the current wave */
-    /* liveprint(current_array, i_max, 0); */
-
-
-
-    /* You should return a pointer to the array with the final results. */
-    if (clean_threads(num_threads)) {
-        fprintf(stderr, "An error happened while cleaning threads.\n");
-        exit(EXIT_FAILURE);
-    }
-    pthread_mutex_destroy(&g_lock);
     return current_array;
 }
 
