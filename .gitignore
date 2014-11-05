@@ -143,4 +143,3 @@ sympy-plots-for-*.tex/
 
 # gnuplot shit
 *.png
-*.gnp

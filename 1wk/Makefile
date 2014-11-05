@@ -3,8 +3,8 @@ SRCFILES = assign1_1.c file.c timer.c simulate.c
 TARNAME = assign1_1.tgz
 
 # i_max t_max num_threads
-RUNARGS = 1000000 1000 2
-# RUNARGS = 10 1000 2
+RUNARGS = 1000 1000000 4
+# RUNARGS = 20 10 4
 
 IMAGEVIEW = display
 CC = gcc

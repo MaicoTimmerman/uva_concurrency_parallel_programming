@@ -11,12 +11,25 @@
 #include "simulate.h"
 
 
-pthread_t *g_p_threads;
-double *g_old_array;
-double *g_current_array;
-double *g_next_array;
-const int *g_imax;
-const int *g_num_threads;
+typedef struct args_t {
+    int i_start;
+    int i_stop;
+
+} args_t;
+
+pthread_t *g_pthreads;
+
+pthread_mutex_t wait_lock = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t  wait_cond = PTHREAD_COND_INITIALIZER;
+
+double *old;
+double *cur;
+double *next;
+double *temp;
+
+int g_imax;
+int g_num_threads;
+int threads_busy;
 
 /* Add any functions you may need (like a worker) here. */
 void *calc_wave(void *s);
@@ -28,20 +41,25 @@ int clean_threads(const int num_threads);
  */
 void *calc_wave(void *s)
 {
-    int *thread_id = (int*)s;
-    int interval = *g_imax / *g_num_threads;
-    int start, stop;
+    args_t * args = (args_t*)s;
 
-    start = *thread_id * interval;
-    stop = (*thread_id + 1) * interval;
-
-    if (*thread_id == *g_num_threads) stop = *g_imax;
-
-    for (int i = start; i < stop; i++) {
-        g_next_array[i] = (2 * g_current_array[i]) - g_old_array[i] +
-            0.15 * (g_current_array[i-1] -
-                    (2 * g_current_array[i] - g_current_array[i+1]));
+    for (int i = args->i_start; i < (args->i_stop); i++) {
+        next[i] = (2*cur[i]) - old[i] + 0.15*(cur[i-1] - (2*cur[i] - cur[i+1]));
     }
+
+    pthread_mutex_lock(&wait_lock);
+    threads_busy--;
+    if (threads_busy == 0) {
+        temp = old;
+        old = cur;
+        cur = next;
+        next = temp;
+        threads_busy = g_num_threads;
+        pthread_cond_broadcast(&wait_cond);
+    } else {
+        pthread_cond_wait(&wait_cond, &wait_lock);
+    }
+    pthread_mutex_unlock(&wait_lock);
 
     return NULL;
 }
@@ -51,21 +69,30 @@ void *calc_wave(void *s)
  */
 int init_threads(const int num_threads)
 {
+    int interval = g_imax / num_threads;
 
     /* Alloc enough space for the buffers */
-    if (!(g_p_threads = (pthread_t *)malloc(sizeof(pthread_t) * num_threads))) {
+    if (!(g_pthreads = (pthread_t *)malloc(sizeof(pthread_t) * num_threads))) {
         fprintf(stderr, "Malloc of threads failed\n");
         return 2;
     }
 
     /* Initialize the threads */
     for (int i = 0; i < num_threads; i++) {
-        int *arg = (int*)malloc(sizeof(*arg));
-        *arg = i;
-        if (pthread_create(&g_p_threads[i], NULL, calc_wave, (void*)arg)) {
+
+        /* Create the arguments structs. */
+        args_t args;
+        args.i_start = i * interval;
+        args.i_stop = (i+1) * interval;
+
+
+        if (i == num_threads) args.i_stop = g_imax;
+
+        if (pthread_create(&g_pthreads[i], NULL, calc_wave, (void*)&args)) {
             fprintf(stderr, "pthread_create failed\n");
             return 1;
         }
+
     }
     return 0;
 }
@@ -75,15 +102,14 @@ int init_threads(const int num_threads)
  */
 int clean_threads(const int num_threads)
 {
-
     /* Join all the threads */
     for (int i = 0; i < num_threads; i++) {
-        if(pthread_join(g_p_threads[i], NULL)) {
+        if(pthread_join(g_pthreads[i], NULL)) {
             return 1;
         }
     }
 
-    free(g_p_threads);
+    free(g_pthreads);
     return 0;
 }
 
@@ -103,48 +129,25 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
         double *old_array, double *current_array, double *next_array)
 {
 
-    int t_current = 0;
-    double *temp;
+    /* Set all the global variables. */
+    old = old_array;
+    cur = current_array;
+    next = next_array;
 
-    /* Struct with arguments for the thread. */
-    g_old_array = old_array;
-    g_current_array = current_array;
-    g_next_array = next_array;
-    g_imax = &i_max;
-    g_num_threads = &num_threads;
+    g_imax = i_max;
+    g_num_threads = num_threads;
+    threads_busy = num_threads;
 
-    /* for (int i = 0; i < i_max; i++) { */
-    /*     printf("%f, ", next_array[i]); */
-    /* } */
-    /* printf("\n"); */
+    /* Thread creation */
+    if (init_threads(num_threads)) {
+        fprintf(stderr, "An error happened while initializing threads.\n");
+        exit(EXIT_FAILURE);
+    }
 
-
-    /* Loop through all rows */
-    while (t_current < t_max) {
-
-        /* Thread creation */
-        if (init_threads(num_threads)) {
-            fprintf(stderr, "An error happened while initializing threads.\n");
-            exit(EXIT_FAILURE);
-        }
-
-        /* Synchronize all threads by joining them. */
-        if (clean_threads(num_threads)) {
-            fprintf(stderr, "An error happened while cleaning threads.\n");
-            exit(EXIT_FAILURE);
-        }
-
-        /* for (int i = 0; i < i_max; i++) { */
-        /*     printf("%f, ", next_array[i]); */
-        /* } */
-        /* printf("\n"); */
-
-        temp = g_old_array;
-        g_old_array = g_current_array;
-        g_current_array = g_next_array;
-        g_next_array = temp;
-
-        t_current++;
+    /* Synchronize all threads by joining them. */
+    if (clean_threads(num_threads)) {
+        fprintf(stderr, "An error happened while cleaning threads.\n");
+        exit(EXIT_FAILURE);
     }
 
     return current_array;
@@ -179,5 +182,6 @@ void liveprint(double *amplitudes, const int i_max, int clear)
                 printf("%c", filler_char);
             }
         }
+        printf("\n");
     }
 }
