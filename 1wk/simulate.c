@@ -15,6 +15,8 @@ pthread_t *g_p_threads;
 double *g_old_array;
 double *g_current_array;
 double *g_next_array;
+const int *g_imax;
+const int *g_num_threads;
 
 /* Add any functions you may need (like a worker) here. */
 void *calc_wave(void *s);
@@ -27,11 +29,13 @@ int clean_threads(const int num_threads);
  */
 void *calc_wave(void *s)
 {
-    int *thread_int = (int*)s;
-    printf("Me thread #%d\n", *thread_int);
-    printf("p1: %p\n", g_old_array);
-    printf("p2: %p\n", g_current_array);
-    printf("p3: %p\n", g_next_array);
+    int *thread_id = (int*)s;
+    int interval = *g_imax / *g_num_threads;
+
+    for (int i = *thread_id * interval; i < (*thread_id + 1) * interval; i++) {
+        g_next_array[i] = 0;//TODO calculation magic
+    }
+
     return NULL;
 }
 
@@ -99,6 +103,8 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
     g_old_array = old_array;
     g_current_array = current_array;
     g_next_array = next_array;
+    g_imax = &i_max;
+    g_num_threads = &num_threads;
 
 
     /* Loop through all rows */
@@ -110,17 +116,16 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
             exit(EXIT_FAILURE);
         }
 
-        temp = g_old_array;
-        g_old_array = g_current_array;
-        g_current_array = g_next_array;
-        g_next_array = temp;
-
-
-        /* You should return a pointer to the array with the final results. */
+        /* Synchronize all threads by joining them. */
         if (clean_threads(num_threads)) {
             fprintf(stderr, "An error happened while cleaning threads.\n");
             exit(EXIT_FAILURE);
         }
+
+        temp = g_old_array;
+        g_old_array = g_current_array;
+        g_current_array = g_next_array;
+        g_next_array = temp;
 
         i_current++;
     }
