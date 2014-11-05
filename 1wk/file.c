@@ -29,7 +29,10 @@ void file_read_double_array(const char *filename, double *array, int n)
     for (i = 0; i < n; i++) {
         if (feof(fp))
             break;
-        fscanf(fp, "%lf", &array[i]);
+        n = fscanf(fp, "%lf", &array[i]);
+        if (n != 1) {
+            perror("fscanf");
+        }
     }
 
     fclose(fp);
