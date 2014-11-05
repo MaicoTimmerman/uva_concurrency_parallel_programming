@@ -4,6 +4,7 @@ TARNAME = assign1_1.tgz
 
 # i_max t_max num_threads
 RUNARGS = 1000000 1000 2
+# RUNARGS = 10 1000 2
 
 IMAGEVIEW = display
 CC = gcc

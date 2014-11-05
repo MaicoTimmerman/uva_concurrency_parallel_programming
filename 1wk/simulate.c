@@ -23,7 +23,6 @@ void *calc_wave(void *s);
 int init_threads(const int num_threads);
 int clean_threads(const int num_threads);
 
-
 /*
  * Function to be threaded
  */
@@ -31,9 +30,17 @@ void *calc_wave(void *s)
 {
     int *thread_id = (int*)s;
     int interval = *g_imax / *g_num_threads;
+    int start, stop;
 
-    for (int i = *thread_id * interval; i < (*thread_id + 1) * interval; i++) {
-        g_next_array[i] = 0;//TODO calculation magic
+    start = *thread_id * interval;
+    stop = (*thread_id + 1) * interval;
+
+    if (*thread_id == *g_num_threads) stop = *g_imax;
+
+    for (int i = start; i < stop; i++) {
+        g_next_array[i] = (2 * g_current_array[i]) - g_old_array[i] +
+            0.15 * (g_current_array[i-1] -
+                    (2 * g_current_array[i] - g_current_array[i+1]));
     }
 
     return NULL;
@@ -96,7 +103,7 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
         double *old_array, double *current_array, double *next_array)
 {
 
-    int i_current = 0;
+    int t_current = 0;
     double *temp;
 
     /* Struct with arguments for the thread. */
@@ -106,9 +113,14 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
     g_imax = &i_max;
     g_num_threads = &num_threads;
 
+    /* for (int i = 0; i < i_max; i++) { */
+    /*     printf("%f, ", next_array[i]); */
+    /* } */
+    /* printf("\n"); */
+
 
     /* Loop through all rows */
-    while (i_current < 5) {
+    while (t_current < t_max) {
 
         /* Thread creation */
         if (init_threads(num_threads)) {
@@ -122,12 +134,17 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
             exit(EXIT_FAILURE);
         }
 
+        /* for (int i = 0; i < i_max; i++) { */
+        /*     printf("%f, ", next_array[i]); */
+        /* } */
+        /* printf("\n"); */
+
         temp = g_old_array;
         g_old_array = g_current_array;
         g_current_array = g_next_array;
         g_next_array = temp;
 
-        i_current++;
+        t_current++;
     }
 
     return current_array;
