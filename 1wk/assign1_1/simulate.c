@@ -12,11 +12,11 @@
 #include "file.h"
 
 
-typedef struct args_t {
+struct args_t {
     int i_start;
     int i_stop;
-
-} args_t;
+    int thread_nr;
+};
 
 pthread_t *g_pthreads;
 
@@ -28,26 +28,24 @@ double *cur;
 double *next;
 double *temp;
 
-int g_imax;
 int g_tmax;
 int g_num_threads;
 int threads_busy;
 
 /* Add any functions you may need (like a worker) here. */
 void *calc_wave(void *s);
-int init_threads(const int num_threads);
-int clean_threads(const int num_threads);
 
 /*
  * Function to be threaded
  */
 void *calc_wave(void *s)
 {
-    args_t * args = (args_t*)s;
+    struct args_t * args = (struct args_t*)s;
 
+    fprintf(stderr, "istart: %d istop: %d thread_nr: %d\n", args->i_start, args->i_stop, args->thread_nr);
     for (int j = 0; j < g_tmax; j++) {
         for (int i = args->i_start; i < (args->i_stop); i++) {
-            next[i] = (2*cur[i]) - old[i] + 0.15*(cur[i-1] - (2*cur[i] - cur[i+1]));
+            next[i] = (2*cur[i]) - old[i] + (0.15*(cur[i-1] - (2*cur[i] - cur[i+1])));
         }
 
         pthread_mutex_lock(&wait_lock);
@@ -66,56 +64,6 @@ void *calc_wave(void *s)
     }
 
     return NULL;
-}
-
-/*
- * Initialize all threads and check if all threads have been made successfully.
- */
-int init_threads(const int num_threads)
-{
-    int interval = g_imax / num_threads;
-
-    /* Alloc enough space for the buffers */
-    if (!(g_pthreads = (pthread_t *)malloc(sizeof(pthread_t) * num_threads))) {
-        fprintf(stderr, "Malloc of threads failed\n");
-        return 2;
-    }
-
-    /* Initialize the threads */
-    for (int i = 0; i < num_threads; i++) {
-
-        /* Create the arguments structs. */
-        args_t args;
-        args.i_start = i * interval;
-        args.i_stop = (i+1) * interval;
-
-
-        if (i == 0) args.i_start = 1;
-        if (i == num_threads-1) args.i_stop = g_imax-1;
-
-        if (pthread_create(&g_pthreads[i], NULL, calc_wave, (void*)&args)) {
-            fprintf(stderr, "pthread_create failed\n");
-            return 1;
-        }
-
-    }
-    return 0;
-}
-
-/*
- * Clean all the threads used in the program.
- */
-int clean_threads(const int num_threads)
-{
-    /* Join all the threads */
-    for (int i = 0; i < num_threads; i++) {
-        if(pthread_join(g_pthreads[i], NULL)) {
-            return 1;
-        }
-    }
-
-    free(g_pthreads);
-    return 0;
 }
 
 /*
@@ -138,56 +86,51 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
     old = old_array;
     cur = current_array;
     next = next_array;
-
-    g_imax = i_max;
     g_tmax = t_max;
     g_num_threads = num_threads;
     threads_busy = num_threads;
 
     /* Thread creation */
-    if (init_threads(num_threads)) {
-        fprintf(stderr, "An error happened while initializing threads.\n");
+    int interval = i_max / num_threads;
+
+    /* Alloc enough space for the buffers */
+    if (!(g_pthreads = (pthread_t *)malloc(sizeof(pthread_t) * num_threads))) {
+        fprintf(stderr, "Malloc of threads failed\n");
         exit(EXIT_FAILURE);
     }
 
-    /* Synchronize all threads by joining them. */
-    if (clean_threads(num_threads)) {
-        fprintf(stderr, "An error happened while cleaning threads.\n");
-        exit(EXIT_FAILURE);
+    struct args_t args[num_threads];
+
+    /* Initialize the threads */
+    for (int i = 0; i < num_threads; i++) {
+
+        /* Create the arguments structs. */
+        args[i].i_start = i * interval;
+        args[i].i_stop = (i+1) * interval;
+        args[i].thread_nr = i;
+
+        /* Leave the ends untouched. */
+        if (i == 0) {
+            args[i].i_start = 1;
+        }
+        if (i == num_threads - 1) {
+            args[i].i_stop = i_max-1;
+        }
+
+        if (pthread_create(&g_pthreads[i], NULL, calc_wave, (void*)&(args[i]))) {
+            fprintf(stderr, "An error happened while initializing threads.\n");
+            exit(EXIT_FAILURE);
+        }
     }
+
+    /* Join all the threads */
+    for (int i = 0; i < num_threads; i++) {
+        if(pthread_join(g_pthreads[i], NULL)) {
+            fprintf(stderr, "An error happened while joining threads.\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    free(g_pthreads);
 
     return cur;
-}
-
-void liveprint(double *amplitudes, const int i_max, int clear)
-{
-    int lines_amount = 21; //has to be uneven!!
-    int altitude = (lines_amount -1) / 2;
-
-
-    /* Clear lines if not first time printing */
-    if (clear) {
-        for (int i = 0; i < lines_amount; i++) {
-            printf("\x1b[1A");
-        }
-    }
-
-    /* Print the Wave */
-    for (int i = altitude; i >= (-1 * altitude); i--) {
-        char filler_char = ' ';
-        if (i == 0) {
-            filler_char = '=';
-        }
-
-        /* Still needs to be percentualised, using the highest amplitude value */
-        for (int j = 0; j < i_max; j++) {
-            if (amplitudes[j] == i) {
-                printf("+");
-            }
-            else {
-                printf("%c", filler_char);
-            }
-        }
-        printf("\n");
-    }
 }

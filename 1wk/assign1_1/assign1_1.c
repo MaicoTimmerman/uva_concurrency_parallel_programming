@@ -137,6 +137,8 @@ int main(int argc, char *argv[])
     /* Call the actual simulation that should be implemented in simulate.c. */
     finished = simulate(i_max, t_max, num_threads, old, current, next);
 
+    fprintf(stderr, "finished pointer: %p\n", finished);
+
     time = timer_end();
     printf("Took %g seconds\n", time);
     printf("Normalized: %g seconds\n", time / (i_max * t_max));
