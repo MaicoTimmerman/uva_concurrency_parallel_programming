@@ -20,6 +20,8 @@ struct queue_t {
 /* Creates a new queue and give back a pointer used to manipulate that queue. */
 queue_t* create_queue(void) {
     queue_t* new_queue = malloc(sizeof(queue_t));
+    new_queue->queue_first = NULL;
+    new_queue->queue_last = NULL;
     return new_queue;
 }
 
@@ -98,6 +100,7 @@ int queue_size(queue_t* queue) {
     return count;
 }
 
+/*
 int main(int argc, char *argv[]) {
     queue_t* queue1 = create_queue();
     queue_t* queue2 = create_queue();
@@ -127,4 +130,4 @@ int main(int argc, char *argv[]) {
     return 0;
 
 }
-
+*/
