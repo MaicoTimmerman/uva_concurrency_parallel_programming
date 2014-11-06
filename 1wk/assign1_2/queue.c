@@ -22,6 +22,19 @@ queue_t* create_queue(void) {
     queue_t* new_queue = malloc(sizeof(queue_t));
     return new_queue;
 }
+
+void destroy_queue(queue_t* queue) {
+    queue_element_t* current = queue->queue_first;
+    queue_element_t* new_current = NULL;
+    while (current) {
+        new_current = current->next;
+        free(current);
+        current = new_current;
+    }
+    free(queue);
+    return;
+}
+
 /* Enqueue an element regardless of how many elements are currently in the queue. */
 void enqueue(int element, queue_t* queue) {
     /* For enqueueing in an empty queue. */
@@ -34,18 +47,18 @@ void enqueue(int element, queue_t* queue) {
     }
     /* For a non-empty queue. */
     else {
-        queue_element_t* newitem = malloc(sizeof(queue_element_t));
-        newitem->previous = NULL;
-        newitem->element = element;
-        newitem->next = queue->queue_first;
-        queue->queue_first->previous = newitem;
-        queue->queue_first = newitem;
+        queue_element_t* new_item = malloc(sizeof(queue_element_t));
+        new_item->previous = NULL;
+        new_item->element = element;
+        new_item->next = queue->queue_first;
+        queue->queue_first->previous = new_item;
+        queue->queue_first = new_item;
     }
 }
 
 /* Dequeue an element, cleaning up the removed element and returning the corresponding element. */
 int dequeue(queue_t* queue) {
-    /* Cannot dequeue when empty, will return 0 instead. */
+    /* Cannot dequeue when empty, will return -1 instead. */
     if (!queue_empty(queue)) {
         int element = queue->queue_last->element;
         queue->queue_last->element = 0;
@@ -63,7 +76,7 @@ int dequeue(queue_t* queue) {
         }
         return element;
     }
-    return 0;
+    return -1;
 }
 
 /* Check if the queue is empty. Note that it returns true when it IS empty. */
@@ -83,5 +96,35 @@ int queue_size(queue_t* queue) {
         current = current->next;
     }
     return count;
+}
+
+int main(int argc, char *argv[]) {
+    queue_t* queue1 = create_queue();
+    queue_t* queue2 = create_queue();
+
+    enqueue(1, queue1);
+    enqueue(11, queue2);
+    enqueue(2, queue1);
+    enqueue(12, queue2);
+    enqueue(13, queue2);
+    printf("Queue2 = %d, queue 1 = %d\n", queue_size(queue2), queue_size(queue1));
+    printf("%d\n", dequeue(queue1));
+    printf("%d\n", queue_empty(queue1));
+    printf("%d\n", dequeue(queue1));
+    printf("%d\n", queue_empty(queue1));
+    printf("end of queue 1\n");
+    printf("%d\n", dequeue(queue2));
+    printf("%d\n", dequeue(queue2));
+    enqueue(21, queue2);
+    printf("%d\n", dequeue(queue2));
+    printf("%d\n", dequeue(queue2));
+    printf("%d\n", dequeue(queue2));
+    printf("%d\n", queue_empty(queue2));
+    destroy_queue(queue2);
+    enqueue(2, queue1);
+    enqueue(3, queue1);
+    destroy_queue(queue1);
+    return 0;
+
 }
 
