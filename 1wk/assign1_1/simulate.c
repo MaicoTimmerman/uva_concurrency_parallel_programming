@@ -29,6 +29,7 @@ double *next;
 double *temp;
 
 int g_imax;
+int g_tmax;
 int g_num_threads;
 int threads_busy;
 
@@ -44,23 +45,25 @@ void *calc_wave(void *s)
 {
     args_t * args = (args_t*)s;
 
-    for (int i = args->i_start; i < (args->i_stop); i++) {
-        next[i] = (2*cur[i]) - old[i] + 0.15*(cur[i-1] - (2*cur[i] - cur[i+1]));
-    }
+    for (int j = 0; j < g_tmax; j++) {
+        for (int i = args->i_start; i < (args->i_stop); i++) {
+            next[i] = (2*cur[i]) - old[i] + 0.15*(cur[i-1] - (2*cur[i] - cur[i+1]));
+        }
 
-    pthread_mutex_lock(&wait_lock);
-    threads_busy--;
-    if (threads_busy == 0) {
-        temp = old;
-        old = cur;
-        cur = next;
-        next = temp;
-        threads_busy = g_num_threads;
-        pthread_cond_broadcast(&wait_cond);
-    } else {
-        pthread_cond_wait(&wait_cond, &wait_lock);
+        pthread_mutex_lock(&wait_lock);
+        threads_busy--;
+        if (threads_busy == 0) {
+            temp = old;
+            old = cur;
+            cur = next;
+            next = temp;
+            threads_busy = g_num_threads;
+            pthread_cond_broadcast(&wait_cond);
+        } else {
+            pthread_cond_wait(&wait_cond, &wait_lock);
+        }
+        pthread_mutex_unlock(&wait_lock);
     }
-    pthread_mutex_unlock(&wait_lock);
 
     return NULL;
 }
@@ -87,7 +90,8 @@ int init_threads(const int num_threads)
         args.i_stop = (i+1) * interval;
 
 
-        if (i == num_threads) args.i_stop = g_imax;
+        if (i == 0) args.i_start = 1;
+        if (i == num_threads-1) args.i_stop = g_imax-1;
 
         if (pthread_create(&g_pthreads[i], NULL, calc_wave, (void*)&args)) {
             fprintf(stderr, "pthread_create failed\n");
@@ -136,6 +140,7 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
     next = next_array;
 
     g_imax = i_max;
+    g_tmax = t_max;
     g_num_threads = num_threads;
     threads_busy = num_threads;
 
@@ -151,7 +156,7 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
         exit(EXIT_FAILURE);
     }
 
-    return current_array;
+    return cur;
 }
 
 void liveprint(double *amplitudes, const int i_max, int clear)

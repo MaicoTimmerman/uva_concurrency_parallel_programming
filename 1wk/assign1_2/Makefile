@@ -1,12 +1,12 @@
-PROGNAME = assign1_1.out
-SRCFILES = assign1_1.c file.c timer.c simulate.c
-TARNAME = assign1_1.tgz
+PROGNAME = assign1_2.out
+SRCFILES = assign1_2.c file.c timer.c simulate.c
+TARNAME = assign1_2.tgz
 
 # i_max t_max num_threads
-RUNARGS_T1 = 10000 500 1
-RUNARGS_T2 = 10000 500 2
-RUNARGS_T3 = 10000 500 4
-RUNARGS_T4 = 10000 500 8
+RUNARGS_T1 = 1000000 1000 1
+RUNARGS_T2 = 1000000 1000 2
+RUNARGS_T3 = 1000000 1000 4
+RUNARGS_T4 = 1000000 1000 8
 
 IMAGEVIEW = display
 CC = gcc
@@ -30,23 +30,17 @@ $(PROGNAME): $(OBJFILES)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 run: $(PROGNAME)
-	prun -v -np 1 $(PROGNAME) $(RUNARGS_T1)
-	prun -v -np 1 $(PROGNAME) $(RUNARGS_T2)
-	prun -v -np 1 $(PROGNAME) $(RUNARGS_T3)
-	prun -v -np 1 $(PROGNAME) $(RUNARGS_T4)
+	prun -v -np 1
 
 cgdb: $(PROGNAME)
-	cgdb --args $(PROGNAME) $(RUNARGS_T2)
+	cgdb --args $(PROGNAME)
 
 valgrind: $(PROGNAME)
-	valgrind ./$(PROGNAME) $(RUNARGS_T2)
+	valgrind ./$(PROGNAME)
 
 runlocal: $(PROGNAME)
-	./$(PROGNAME) $(RUNARGS_T3)
+	./$(PROGNAME)
 
-plot: result.txt
-	gnuplot plot.gnp
-	$(IMAGEVIEW) plot.png
 
 todo:
 	-@for file in *.c *.h; do \
@@ -54,9 +48,6 @@ todo:
 			sed 's/:[ \t]*\/\//: \/\//' | \
 			sed 's/:[ \t]*\/\*/: \/\*/'; \
 		done; true
-
-dist:
-	tar cvzf $(TARNAME) Makefile *.c *.h data/
 
 clean:
 	rm -fv $(PROGNAME) $(OBJFILES) $(TARNAME)

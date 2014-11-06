@@ -50,7 +50,7 @@ void fill(double *array, int offset, int range, double sample_start,
 
 int main(int argc, char *argv[])
 {
-    double *old, *current, *next;
+    double *old, *current, *next, *finished;
     int t_max, i_max, num_threads;
     double time;
 
@@ -135,13 +135,13 @@ int main(int argc, char *argv[])
     timer_start();
 
     /* Call the actual simulation that should be implemented in simulate.c. */
-    simulate(i_max, t_max, num_threads, old, current, next);
+    finished = simulate(i_max, t_max, num_threads, old, current, next);
 
     time = timer_end();
     printf("Took %g seconds\n", time);
     printf("Normalized: %g seconds\n", time / (i_max * t_max));
 
-    file_write_double_array("result.txt", current, i_max);
+    file_write_double_array("result.txt", finished, i_max);
 
     free(old);
     free(current);
