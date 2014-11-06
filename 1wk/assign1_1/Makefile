@@ -3,10 +3,10 @@ SRCFILES = assign1_1.c file.c timer.c simulate.c
 TARNAME = assign1_1.tgz
 
 # i_max t_max num_threads
-RUNARGS_T1 = 10000 500 1
-RUNARGS_T2 = 10000 500 2
-RUNARGS_T3 = 10000 500 4
-RUNARGS_T4 = 10000 500 8
+RUNARGS_T1 = 1000000 5000 1
+RUNARGS_T2 = 1000000 5000 2
+RUNARGS_T3 = 1000000 5000 4
+RUNARGS_T4 = 1000000 5000 8
 
 IMAGEVIEW = display
 CC = gcc
@@ -36,10 +36,10 @@ run: $(PROGNAME)
 	prun -v -np 1 $(PROGNAME) $(RUNARGS_T4)
 
 cgdb: $(PROGNAME)
-	cgdb --args $(PROGNAME) $(RUNARGS_T2)
+	cgdb --args $(PROGNAME) $(RUNARGS_T3)
 
 valgrind: $(PROGNAME)
-	valgrind ./$(PROGNAME) $(RUNARGS_T2)
+	valgrind ./$(PROGNAME) $(RUNARGS_T3)
 
 runlocal: $(PROGNAME)
 	./$(PROGNAME) $(RUNARGS_T3)

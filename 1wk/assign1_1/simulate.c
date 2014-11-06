@@ -12,25 +12,17 @@
 #include "file.h"
 
 
-struct args_t {
+typedef struct args_t {
     int i_start;
     int i_stop;
     int thread_nr;
-};
+} args_t;
 
 pthread_t *g_pthreads;
-
 pthread_mutex_t wait_lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t  wait_cond = PTHREAD_COND_INITIALIZER;
-
-double *old;
-double *cur;
-double *next;
-double *temp;
-
-int g_tmax;
-int g_num_threads;
-int threads_busy;
+int g_tmax, g_num_threads, threads_busy;
+double *old, *cur, *next, *temp;
 
 /* Add any functions you may need (like a worker) here. */
 void *calc_wave(void *s);
@@ -40,14 +32,18 @@ void *calc_wave(void *s);
  */
 void *calc_wave(void *s)
 {
-    struct args_t * args = (struct args_t*)s;
+    /* Get the arguments struct. */
+    args_t * args = (args_t*)s;
 
-    fprintf(stderr, "istart: %d istop: %d thread_nr: %d\n", args->i_start, args->i_stop, args->thread_nr);
+    /* For every timeset generate the i's designated for this thread. */
     for (int j = 0; j < g_tmax; j++) {
         for (int i = args->i_start; i < (args->i_stop); i++) {
             next[i] = (2*cur[i]) - old[i] + (0.15*(cur[i-1] - (2*cur[i] - cur[i+1])));
         }
 
+        /* After being done with the calculation, check if this thread was the
+         * last one finished. If so, swap the buffers and tell all
+         * other threads to start running again. */
         pthread_mutex_lock(&wait_lock);
         threads_busy--;
         if (threads_busy == 0) {
@@ -61,8 +57,8 @@ void *calc_wave(void *s)
             pthread_cond_wait(&wait_cond, &wait_lock);
         }
         pthread_mutex_unlock(&wait_lock);
-    }
 
+    }
     return NULL;
 }
 
@@ -99,7 +95,7 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
         exit(EXIT_FAILURE);
     }
 
-    struct args_t args[num_threads];
+    args_t args[num_threads];
 
     /* Initialize the threads */
     for (int i = 0; i < num_threads; i++) {
