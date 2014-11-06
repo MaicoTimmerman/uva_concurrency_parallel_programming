@@ -39,5 +39,6 @@ void filter(int filter_number, queue_t* input_queue) {
 typedef struct thread_args {
     pthread_mutex_t buf_mutex;
     pthread_cond_t buf_cond;
+    int thread_num;
     int buffer[BUF_SIZE];
 } thread_args;
