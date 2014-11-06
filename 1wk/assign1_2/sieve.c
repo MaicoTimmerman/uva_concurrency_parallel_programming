@@ -8,6 +8,14 @@
 
 int natural = 0;
 
+// Voorbeeld
+typedef struct thread_args {
+    pthread_mutex_t buf_mutex;
+    pthread_cond_t buf_cond;
+    int thread_num;
+    int buffer[BUF_SIZE];
+} thread_args;
+
 void filter(int filter_number, queue_t* input_queue) {
     int current;
     queue_t* output_queue = NULL;
@@ -35,10 +43,10 @@ void filter(int filter_number, queue_t* input_queue) {
     }
 }
 
-// Voorbeeld
-typedef struct thread_args {
-    pthread_mutex_t buf_mutex;
-    pthread_cond_t buf_cond;
-    int thread_num;
-    int buffer[BUF_SIZE];
-} thread_args;
+int main(int argc, char *argv[]) {
+    generate_naturals();
+
+
+
+    return EXIT_SUCCESS;
+}
