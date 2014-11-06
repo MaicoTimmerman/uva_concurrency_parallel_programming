@@ -10,14 +10,16 @@ struct queue_element_t {
     queue_element_t* next;
 };
 
-/* Variables for keeping track of first and last element in the linked list. */
+/* Struct that hold the first and last items in the queue, used to differentiate between
+ * different queues. */
 struct queue_t {
     queue_element_t* queue_first;
     queue_element_t* queue_last;
 };
 
-queue_element_t* create_queue(void) {
-    queue_element_t* new_queue = malloc(sizeof(queue_t));
+/* Creates a new queue and give back a pointer used to manipulate that queue. */
+queue_t* create_queue(void) {
+    queue_t* new_queue = malloc(sizeof(queue_t));
     return new_queue;
 }
 /* Enqueue an element regardless of how many elements are currently in the queue. */
@@ -46,7 +48,7 @@ int dequeue(queue_t* queue) {
     /* Cannot dequeue when empty, will return 0 instead. */
     if (!queue_empty(queue)) {
         int element = queue->queue_last->element;
-        queue->queue_last->element = NULL;
+        queue->queue_last->element = 0;
         /* For a queue of more than one element. */
         if (queue->queue_last->previous) {
             queue->queue_last = queue->queue_last->previous;
