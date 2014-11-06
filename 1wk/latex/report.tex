@@ -12,6 +12,7 @@
 
 \usepackage{minted}
 \usepackage{caption}
+\usepackage{amssymb}
 
 \pagestyle{fancy}
 \lhead{\includegraphics[width=7cm]{logoUvA}}
@@ -110,7 +111,9 @@ amount of steps it needs to simulate and the desired amount of threads. The
 program then calculates all the wave values until it has done the specified
 amount of steps.
 
-The Sieve of Eratosthenes <...>
+For the Sieve of Eratosthenes the program will keep producing prime numbers with
+the use of multiple threads, thus utilising parallelism, until the user decides
+to send a SIGINT to terminate the program.
 
 \section{Method}
 \subsection{Wave Equation Simulation}
@@ -126,10 +129,22 @@ the same point. Once the $current\_index$ reaches the last point in the wave,
 $i\_max$, threads will wait until all other threads finish their calculations.
 When the row is completely finished the $current\_index$ is reset and the rows
 are rotated, after which an event is generated telling all threads to restart
-their routine. As an extra feature we added the option to also print the state
-of the wave for each row, thus animating the flow of the wave.
+their routine.
 
 \subsection{Sieve of Eratosthenes}
+
+To find prime numbers, the Sieve of Eratosthenes algorithm is used. This
+algorithm finds primes by filtering out non-primes from a constant flow of
+natural numbers, $n \in \mathbb{N}$. These numbers are passed through a series
+of filters, will filter for multiples of the first prime that was encountered,
+this will always be 2. Any number that is not found to be a multiple of 2 by
+this filter will be passed on to the next filter. If there is no next filter
+that means that the number we have is a prime, since it has passed through all
+filters and was not found to be a multiple of anything. So for this prime, a new
+filter will then be created. Whenever a new prime is found, it will be printed
+for the user. Passing numbers between different filters is done using a queue,
+so that the different threads do not need to wait for each other to finish
+filtering.
 
 
 
