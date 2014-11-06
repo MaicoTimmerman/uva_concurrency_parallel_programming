@@ -9,12 +9,20 @@
 int natural = 0;
 
 // Voorbeeld
-typedef struct thread_args {
+typedef struct thread_args_t {
     pthread_mutex_t buf_mutex;
     pthread_cond_t buf_cond;
     int thread_num;
     int buffer[BUF_SIZE];
-} thread_args;
+} thread_args_t;
+
+void* generator(void *s) {
+
+    thread_args_t *args = (thread_args_t *)s;
+
+
+    return NULL;
+}
 
 void filter(int filter_number, queue_t* input_queue) {
     int current;
@@ -44,8 +52,22 @@ void filter(int filter_number, queue_t* input_queue) {
 }
 
 int main(int argc, char *argv[]) {
-    generate_naturals();
 
+    int num_primes;
+
+    /* Parse commandline args: i_max t_max num_threads */
+    if (argc < 2) {
+        printf("Usage: %s num_primes\n", argv[0]);
+        printf(" - num_primes: number of discrete primes calculated\n");
+        printf("    * The number of threads is equal to the number of primes\n");
+        printf("    * Should be >5 and <5000\n");
+
+        return EXIT_FAILURE;
+    }
+
+    num_primes = atoi(argv[1]);
+
+    pthread_create();
 
 
     return EXIT_SUCCESS;
