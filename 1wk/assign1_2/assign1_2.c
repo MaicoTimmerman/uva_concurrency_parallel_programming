@@ -77,7 +77,8 @@ void* filter(void *s) {
 
         /* Fetch the new value from the buffer */
         val = args->buffer.values[(args->buffer.read_index)];
-        args->buffer.read_index++;
+        args->buffer.read_index = args->buffer.read_index + 1 % BUF_SIZE;
+        args->buffer.buf_size -= 1;
 
         /* Release the input buffer */
         pthread_cond_signal(&(args->buf_cond));
@@ -118,7 +119,8 @@ void* filter(void *s) {
         }
 
         next_args.buffer.values[next_args.buffer.write_index] = val;
-        next_args.buffer.write_index++;
+        next_args.buffer.write_index = next_args.buffer.write_index + 1 % BUF_SIZE;
+        next_args.buffer.buf_size += 1;
 
         pthread_cond_signal(&(next_args.buf_cond));
         pthread_mutex_unlock(&(next_args.buf_mutex));
@@ -169,6 +171,7 @@ int main(int argc, char *argv[]) {
     start_filter.filter_value = current_number;
     start_filter.buffer.read_index = 0;
     start_filter.buffer.write_index = 0;
+    start_filter.buffer.buf_size = 0;
 
     timer_start();
 
@@ -197,7 +200,8 @@ int main(int argc, char *argv[]) {
 
         start_filter.buffer.values[start_filter.buffer.write_index] = current_number;
         current_number+=2;
-        start_filter.buffer.write_index++;
+        start_filter.buffer.write_index = start_filter.buffer.write_index + 1 % BUF_SIZE;
+        start_filter.buffer.buf_size += 1;
 
         /* Signal that the buffer is filled, and wait for the request of a
          * new buffer */
