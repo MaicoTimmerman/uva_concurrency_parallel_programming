@@ -129,9 +129,6 @@ void* filter(void *s) {
     pthread_mutex_destroy(&(next_args.buf_mutex));
     pthread_cond_destroy(&(next_args.buf_cond));
 
-    /* time = timer_end(); */
-    /* printf("%g\n", time); */
-
     return NULL;
 }
 
