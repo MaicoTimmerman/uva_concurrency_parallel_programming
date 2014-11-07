@@ -144,7 +144,9 @@ filters and was not found to be a multiple of anything. So for this prime, a new
 filter will then be created. Whenever a new prime is found, it will be printed
 for the user. Passing numbers between different filters is done using a queue,
 so that the different threads do not need to wait for each other to finish
-filtering.
+filtering. These queues have a set length, so that starvation cannot occur for
+filters that are later in the chain. When a queue is full, that thread will
+simply wait until it is completely empty before its starts filling it up again.
 
 
 
