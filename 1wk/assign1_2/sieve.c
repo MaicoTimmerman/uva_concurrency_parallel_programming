@@ -16,7 +16,7 @@ typedef struct thread_args_t {
     pthread_t pthread;
     pthread_mutex_t buf_mutex;
     pthread_cond_t buf_cond;
-    int thread_num;
+    int filter_value;
 
     /* Buffer info */
     int buffer[BUF_SIZE];
@@ -28,17 +28,58 @@ typedef struct thread_args_t {
  */
 void* filter(void *s) {
 
-    int filter_created;
-    int current_filter = 0;
+    int filter_created = 0;
+    thread_args_t next_args;
 
+    /* Get the arguments of this thread. */
     thread_args_t *args = (thread_args_t *)args;
 
-    pthread_mutex_lock(&(args->buf_mutex));
+    /* Print the new prime and raise the number of primes */
+    pthread_mutex_lock(&num_primes_mutex);
+    num_primes++;
+    printf("Num of primes: %d, current prime: %d",
+            num_primes, args->filter_value);
+    pthread_mutex_unlock(&num_primes_mutex);
+
+    /* Create the connection link between this filter and the next. */
+    pthread_mutex_init(&(next_args.buf_mutex), NULL);
+    pthread_cond_init(&(next_args.buf_cond), NULL);
+    next_args.buf_index = 0;
+
+    /* Continue until enough primes have been generated */
     while (num_primes < num_threads) {
-        if (args->buf_index > 0) {
+
+        pthread_mutex_lock(&(args->buf_mutex));
+        pthread_mutex_lock(&(next_args.buf_mutex));
+
+        /* If the input buffer is empty, wait for a
+         * signal that it has been filled further. */
+        while (!(args->buf_index > 0)) {
+            pthread_mutex_unlock(&(next_args.buf_mutex)); //Could cause deadlock?
+            pthread_cond_wait(
+                    &(args->buf_cond),
+                    &(args->buf_mutex));
+            pthread_mutex_lock(&(next_args.buf_mutex)); //Could cause deadlock?
+        }
+
+        /* If the input buffer is empty, wait for a
+         * signal that it has been filled further. */
+        while (!(next_args.buf_index < BUF_SIZE)) {
+            pthread_mutex_unlock(&(args->buf_mutex)); //Could cause deadlock?
+            pthread_cond_wait(
+                    &(next_args.buf_cond),
+                    &(next_args.buf_mutex));
+            pthread_mutex_lock(&(args->buf_mutex)); //Could cause deadlock?
+        }
+
+        if (!filter_created) {
+            next_args.filter_value = args->buffer[args->buf_index - 1];
 
         }
+        //magic
+
     }
+
     return NULL;
 }
 
@@ -72,7 +113,7 @@ int main(int argc, char *argv[]) {
     pthread_mutex_init(&(start_filter.buf_mutex), NULL);
     pthread_cond_init(&(start_filter.buf_cond), NULL);
 
-    start_filter.thread_num = 0;
+    start_filter.filter_value = current_number;
     start_filter.buf_index = 0;
 
     /* Start the generator thread */
