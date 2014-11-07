@@ -76,7 +76,7 @@ void* filter(void *s) {
         }
 
         /* Fetch the new value from the buffer */
-        val = args->buffer.values[(args->buffer.buf_size) - 1];
+        val = args->buffer.values[(args->buffer.read_index)];
         args->buffer.read_index++;
 
         /* Release the input buffer */
