@@ -162,8 +162,19 @@ before it can continue.
 
 \section{Results}
 \subsection{Wave Equation Simulation}
+Running the Wave Simulation on the DAS4 machine with different values for the
+total amount of amplitude points and also varying the amount of threads used,
+but keeping the amount of time steps the same at 10000. In the graph below the
+results are shown, dividing the time it took to run that particular simulation
+on one thread by the time it took to run it on two, four, six and eight threads.
 
-
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{chart1_1}
+    \caption{Speed-up factor of Wave Simulations with different amount of total
+        amplitude points. Comparing multiple thread to single thread runtime.
+        Running a total of 10000 time steps.}
+\end{figure}
 
 \subsection{Sieve of Eratosthenes}
 
@@ -171,7 +182,17 @@ before it can continue.
 
 \section{Discussion}
 \subsection{Wave Equation Simulation}
-
+It is interesting to see that when running the Wave Simulation with one million
+amplitude points gives a significantly higher speed-up than when it is run with
+a hundred thousand or ten million. In fact, when going from six to eight cores
+in the ten million points simulation, the speed-up factor actually slightly
+drops. This overhead has to be created then by the synchronization at the end of
+each time step. Since the program now has to deal with rather large quantities
+of data.\\
+The reason for the lower amount of amplitude points to also have a lower
+speed-up factor can be explained by the fact that running it with one thread is
+relatively fast due to the smaller amount of computations needed. Thus the
+speed-up achieved is also lower.
 
 
 \subsection{Sieve of Eratosthenes}
