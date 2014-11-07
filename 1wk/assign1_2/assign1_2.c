@@ -13,11 +13,6 @@ int g_num_threads;
 int g_num_primes;
 pthread_mutex_t num_primes_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-/* Shared thread vector */
-int g_pthread_counter;
-pthread_t *g_pthreads;
-pthread_mutex_t g_pthread_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 typedef struct buffer_t {
     int buf_size;
     int write_index;
@@ -28,6 +23,7 @@ typedef struct buffer_t {
 /* Argument thread for communication between filters */
 typedef struct thread_args_t {
     /* Thread info */
+    pthread_t pthread;
     pthread_mutex_t buf_mutex;
     pthread_cond_t buf_cond;
     int filter_value;
@@ -51,9 +47,12 @@ void* filter(void *s) {
 
     /* Print the new prime and raise the number of primes */
     pthread_mutex_lock(&num_primes_mutex);
-    g_num_primes++;\
-    printf("Num of primes: %d\n", g_num_primes);
-    printf("Current prime: %d\n", args->filter_value);
+    g_num_primes++;
+    printf("\x1b[1A");
+    printf("Current prime: %d, Total primes (%d/%d)",
+            args->filter_value,
+            g_num_primes,
+            g_num_threads);
     pthread_mutex_unlock(&num_primes_mutex);
 
     /* Create the connection link between this filter and the next. */
@@ -99,14 +98,11 @@ void* filter(void *s) {
             next_args.filter_value = val;
 
             /* Create thread and raise counter */
-            pthread_mutex_lock(&g_pthread_mutex);
             pthread_create(
-                    &(g_pthreads[g_pthread_counter]),
+                    &(next_args.pthread),
                     NULL,
                     filter,
                     (void*)&next_args);
-            g_pthread_counter++;
-            pthread_mutex_unlock(&g_pthread_mutex);
             continue;
         }
 
@@ -163,13 +159,6 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    /* The max number of threads is equal to the number of primes */
-    g_pthread_counter = 0;
-    if (!(g_pthreads = (pthread_t *)malloc(sizeof(pthread_t) * g_num_threads))) {
-        fprintf(stderr, "Malloc of threads failed\n");
-        exit(EXIT_FAILURE);
-    }
-
     /* create the connection link between generator and the first filter */
     thread_args_t start_filter;
 
@@ -184,17 +173,14 @@ int main(int argc, char *argv[]) {
     timer_start();
 
     /* Start the first filter thread thread */
-    pthread_mutex_lock(&g_pthread_mutex);
     if (pthread_create(
-                &(g_pthreads[g_pthread_counter]),
+                &(start_filter.pthread),
                 NULL,
                 filter,
                 (void*)&start_filter)) {
         fprintf(stderr, "An error happened while initializing generator\n");
         return EXIT_FAILURE;
     }
-    g_pthread_counter++;
-    pthread_mutex_unlock(&g_pthread_mutex);
 
     while (g_num_primes < g_num_threads) {
 
