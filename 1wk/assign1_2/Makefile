@@ -39,7 +39,7 @@ valgrind: $(PROGNAME)
 	valgrind ./$(PROGNAME) $(RUNARGS_T2)
 
 runlocal: $(PROGNAME)
-	./$(PROGNAME) $(RUNARGS_T2)
+	./$(PROGNAME) $(RUNARGS_T4)
 
 
 todo:

@@ -12,18 +12,27 @@ int g_num_threads;
 int g_num_primes;
 pthread_mutex_t num_primes_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+/* Shared thread vector */
+int g_pthread_counter;
+pthread_t *g_pthreads;
+pthread_mutex_t g_pthread_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+typedef struct buffer_t {
+    int buf_size;
+    int write_index;
+    int read_index;
+    int values[BUF_SIZE];
+} buffer_t;
 
 /* Argument thread for communication between filters */
 typedef struct thread_args_t {
     /* Thread info */
-    pthread_t pthread;
     pthread_mutex_t buf_mutex;
     pthread_cond_t buf_cond;
     int filter_value;
 
     /* Buffer info */
-    int buffer[BUF_SIZE];
-    int buf_index; //equal to BUF_SIZE when full.
+    buffer_t buffer;
 } thread_args_t;
 
 /*
@@ -40,17 +49,17 @@ void* filter(void *s) {
 
     /* Print the new prime and raise the number of primes */
     pthread_mutex_lock(&num_primes_mutex);
-    g_num_primes++;
-    printf("\x1b[1A");
-    printf("Current prime: (%d), Num of primes: (%d/%d)\n",
-            args->filter_value,
-            g_num_primes, g_num_threads);
+    g_num_primes++;\
+    printf("Num of primes: %d\n", g_num_primes);
+    printf("Current prime: %d\n", args->filter_value);
     pthread_mutex_unlock(&num_primes_mutex);
 
     /* Create the connection link between this filter and the next. */
     pthread_mutex_init(&(next_args.buf_mutex), NULL);
     pthread_cond_init(&(next_args.buf_cond), NULL);
-    next_args.buf_index = 0;
+    next_args.buffer.read_index = 0;
+    next_args.buffer.write_index = 0;
+    next_args.buffer.buf_size = 0;
 
     /* Continue until enough primes have been generated */
     while (g_num_primes < g_num_threads) {
@@ -59,15 +68,15 @@ void* filter(void *s) {
 
         /* If the input buffer is empty, wait for a
          * signal that it has been filled further. */
-        while (!(args->buf_index > 0)) {
+        while (!(args->buffer.buf_size > 0)) {
             pthread_cond_wait(
                     &(args->buf_cond),
                     &(args->buf_mutex));
         }
 
         /* Fetch the new value from the buffer */
-        val = args->buffer[(args->buf_index) - 1];
-        (args->buf_index)--;
+        val = args->buffer.values[(args->buffer.buf_size) - 1];
+        args->buffer.read_index++;
 
         /* Release the input buffer */
         pthread_cond_signal(&(args->buf_cond));
@@ -88,11 +97,14 @@ void* filter(void *s) {
             next_args.filter_value = val;
 
             /* Create thread and raise counter */
+            pthread_mutex_lock(&g_pthread_mutex);
             pthread_create(
-                    &(next_args.pthread),
+                    &(g_pthreads[g_pthread_counter]),
                     NULL,
                     filter,
                     (void*)&next_args);
+            g_pthread_counter++;
+            pthread_mutex_unlock(&g_pthread_mutex);
             continue;
         }
 
@@ -101,14 +113,14 @@ void* filter(void *s) {
 
         /* If the input buffer is empty, wait for a
          * signal that it has been filled further. */
-        while (!(next_args.buf_index < BUF_SIZE)) {
+        while (!(next_args.buffer.buf_size == 0)) {
             pthread_cond_wait(
                     &(next_args.buf_cond),
                     &(next_args.buf_mutex));
         }
 
-        next_args.buffer[next_args.buf_index] = val;
-        next_args.buf_index++;
+        next_args.buffer.values[next_args.buffer.write_index] = val;
+        next_args.buffer.write_index++;
 
         pthread_cond_signal(&(next_args.buf_cond));
         pthread_mutex_unlock(&(next_args.buf_mutex));
@@ -118,7 +130,6 @@ void* filter(void *s) {
     pthread_mutex_destroy(&(next_args.buf_mutex));
     pthread_cond_destroy(&(next_args.buf_cond));
 
-    exit(EXIT_SUCCESS);
     return NULL;
 }
 
@@ -146,6 +157,13 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
+    /* The max number of threads is equal to the number of primes */
+    g_pthread_counter = 0;
+    if (!(g_pthreads = (pthread_t *)malloc(sizeof(pthread_t) * g_num_threads))) {
+        fprintf(stderr, "Malloc of threads failed\n");
+        exit(EXIT_FAILURE);
+    }
+
     /* create the connection link between generator and the first filter */
     thread_args_t start_filter;
 
@@ -154,20 +172,24 @@ int main(int argc, char *argv[]) {
     pthread_cond_init(&(start_filter.buf_cond), NULL);
 
     start_filter.filter_value = current_number;
-    start_filter.buf_index = 0;
+    start_filter.buffer.read_index = 0;
+    start_filter.buffer.write_index = 0;
 
     printf("Num of primes: %d\n", g_num_primes);
     printf("Current prime: %d\n", 2);
 
     /* Start the first filter thread thread */
+    pthread_mutex_lock(&g_pthread_mutex);
     if (pthread_create(
-                &(start_filter.pthread),
+                &(g_pthreads[g_pthread_counter]),
                 NULL,
                 filter,
                 (void*)&start_filter)) {
         fprintf(stderr, "An error happened while initializing generator\n");
         return EXIT_FAILURE;
     }
+    g_pthread_counter++;
+    pthread_mutex_unlock(&g_pthread_mutex);
 
     while (g_num_primes < g_num_threads) {
 
@@ -176,15 +198,15 @@ int main(int argc, char *argv[]) {
 
         /* If the buffer is full, wait for a
          * signal that items have been taken */
-        while(!(start_filter.buf_index < BUF_SIZE)) {
+        while(!(start_filter.buffer.buf_size == BUF_SIZE)) {
             pthread_cond_wait(
                     &(start_filter.buf_cond),
                     &(start_filter.buf_mutex));
         }
 
-        start_filter.buffer[start_filter.buf_index] = current_number;
+        start_filter.buffer.values[start_filter.buffer.write_index] = current_number;
         current_number+=2;
-        start_filter.buf_index++;
+        start_filter.buffer.write_index++;
 
         /* Signal that the buffer is filled, and wait for the request of a
          * new buffer */
@@ -192,5 +214,11 @@ int main(int argc, char *argv[]) {
         pthread_mutex_unlock(&(start_filter.buf_mutex));
     }
 
-    exit(EXIT_SUCCESS);
+    for (int i = 0; i < g_num_threads; i++) {
+        if(pthread_join(g_pthreads[i], NULL)) {
+            fprintf(stderr, "An error happened while joining threads.\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    return EXIT_SUCCESS;
 }
