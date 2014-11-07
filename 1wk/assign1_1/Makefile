@@ -42,7 +42,10 @@ valgrind: $(PROGNAME)
 	valgrind ./$(PROGNAME) $(RUNARGS_T3)
 
 runlocal: $(PROGNAME)
+	./$(PROGNAME) $(RUNARGS_T1)
+	./$(PROGNAME) $(RUNARGS_T2)
 	./$(PROGNAME) $(RUNARGS_T3)
+	./$(PROGNAME) $(RUNARGS_T4)
 
 plot: result.txt
 	gnuplot plot.gnp
