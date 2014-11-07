@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include <pthread.h>
+#include "timer.h"
 #include "queue.h"
 
 #define BUF_SIZE 1
@@ -31,9 +32,10 @@ typedef struct thread_args_t {
  */
 void* filter(void *s) {
 
-    int filter_created = 0;
     int val;
+    double time;
     thread_args_t next_args;
+    int filter_created = 0;
 
     /* Get the arguments of this thread. */
     thread_args_t *args = (thread_args_t *)s;
@@ -118,7 +120,9 @@ void* filter(void *s) {
     pthread_mutex_destroy(&(next_args.buf_mutex));
     pthread_cond_destroy(&(next_args.buf_cond));
 
-    exit(EXIT_SUCCESS);
+    /* time = timer_end(); */
+    /* printf("%g\n", time); */
+
     return NULL;
 }
 
@@ -127,6 +131,7 @@ void* filter(void *s) {
  */
 int main(int argc, char *argv[]) {
 
+    double time;
     int current_number = 3;
     g_num_primes = 1;
 
@@ -156,8 +161,7 @@ int main(int argc, char *argv[]) {
     start_filter.filter_value = current_number;
     start_filter.buf_index = 0;
 
-    printf("Num of primes: %d\n", g_num_primes);
-    printf("Current prime: %d\n", 2);
+    timer_start();
 
     /* Start the first filter thread thread */
     if (pthread_create(
@@ -191,6 +195,9 @@ int main(int argc, char *argv[]) {
         pthread_cond_signal(&(start_filter.buf_cond));
         pthread_mutex_unlock(&(start_filter.buf_mutex));
     }
+
+    time = timer_end();
+    printf("%g\n", time);
 
     exit(EXIT_SUCCESS);
 }
