@@ -4,7 +4,7 @@
 #include <pthread.h>
 #include "queue.h"
 
-#define BUF_SIZE 8
+#define BUF_SIZE 1
 
 int num_primes;
 int num_threads;
@@ -33,13 +33,13 @@ void* filter(void *s) {
     thread_args_t next_args;
 
     /* Get the arguments of this thread. */
-    thread_args_t *args = (thread_args_t *)args;
+    thread_args_t *args = (thread_args_t *)s;
 
     /* Print the new prime and raise the number of primes */
     pthread_mutex_lock(&num_primes_mutex);
     num_primes++;
-    printf("Num of primes: %d, current prime: %d",
-            num_primes, args->filter_value);
+    printf("Num of primes: %d\n", num_primes);
+    printf("Current prime: %d\n", args->filter_value);
     pthread_mutex_unlock(&num_primes_mutex);
 
     /* Create the connection link between this filter and the next. */
@@ -77,10 +77,13 @@ void* filter(void *s) {
         /* If it is not dividable, then pass to the next filter.
          * If no such filter exist, then a prime has been found. */
         if (!filter_created) {
-            next_args.filter_value = args->buffer[args->buf_index - 1];
-            printf("Im creating a new filter!");
+            next_args.filter_value = val;
             filter_created = 1;
-            //TODO create a new filter.
+            pthread_create(
+                    &(next_args.pthread),
+                    NULL,
+                    filter,
+                    (void*)&next_args);
             continue;
         }
 
@@ -103,6 +106,16 @@ void* filter(void *s) {
 
     }
 
+    pthread_mutex_destroy(&(next_args.buf_mutex));
+    pthread_cond_destroy(&(next_args.buf_cond));
+
+    int ret;
+    if (ret = pthread_join(next_args.pthread, NULL)) {
+        fprintf(stderr, "An error happened while join first filter: %d", ret);
+        exit(EXIT_FAILURE);
+    }
+    printf("Joined thread #%d\n", next_args.filter_value);
+
     return NULL;
 }
 
@@ -112,7 +125,7 @@ void* filter(void *s) {
 int main(int argc, char *argv[]) {
 
     int current_number = 3;
-    num_primes = 0;
+    num_primes = 1;
 
     /* Parse commandline args: i_max t_max num_threads */
     if (argc < 2) {
@@ -140,13 +153,16 @@ int main(int argc, char *argv[]) {
     start_filter.filter_value = current_number;
     start_filter.buf_index = 0;
 
-    /* Start the generator thread */
+    printf("Num of primes: %d\n", num_primes);
+    printf("Current prime: %d\n", 2);
+
+    /* Start the first filter thread thread */
     if (pthread_create(
                 &(start_filter.pthread),
                 NULL,
                 filter,
                 (void*)&start_filter)) {
-        fprintf(stderr, "An error happened while initializing generator");
+        fprintf(stderr, "An error happened while initializing generator\n");
         return EXIT_FAILURE;
     }
 
@@ -157,7 +173,7 @@ int main(int argc, char *argv[]) {
 
         /* If the buffer is full, wait for a
          * signal that items have been taken */
-        while(!start_filter.buf_index < BUF_SIZE) {
+        while(!(start_filter.buf_index < BUF_SIZE)) {
             pthread_cond_wait(
                     &(start_filter.buf_cond),
                     &(start_filter.buf_mutex));
@@ -172,10 +188,9 @@ int main(int argc, char *argv[]) {
         pthread_cond_signal(&(start_filter.buf_cond));
         pthread_mutex_unlock(&(start_filter.buf_mutex));
     }
-    if (pthread_join(start_filter.pthread, NULL)) {
-        fprintf(stderr, "An error happened while join first filter");
-        return EXIT_FAILURE;
-    }
 
+    int ret = pthread_join(start_filter.pthread, NULL);
+    if (ret)
+        fprintf(stderr,"An error happened while join first filter: %d", ret);
     return EXIT_SUCCESS;
 }
