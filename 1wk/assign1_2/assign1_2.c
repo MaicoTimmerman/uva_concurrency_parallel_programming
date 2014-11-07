@@ -48,7 +48,7 @@ void* filter(void *s) {
     pthread_mutex_lock(&num_primes_mutex);
     g_num_primes++;
     printf("\x1b[A");
-    printf("Current prime: %d, Total primes (%d/%d)",
+    printf("Current prime: %d, Total primes (%d/%d)\n",
             args->filter_value,
             g_num_primes,
             g_num_threads);
