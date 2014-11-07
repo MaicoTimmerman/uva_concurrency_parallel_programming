@@ -8,21 +8,39 @@
 
 int num_primes = 0;
 int num_threads;
+pthread_mutex_t num_primes_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /* Argument thread for communication between filters */
 typedef struct thread_args_t {
+    /* Thread info */
     pthread_t pthread;
     pthread_mutex_t buf_mutex;
     pthread_cond_t buf_cond;
     int thread_num;
+
+    /* Buffer info */
     int buffer[BUF_SIZE];
-    int buf_size;
+    int buf_index; //equal to BUF_SIZE when full.
 } thread_args_t;
 
 /*
  * Function to create a filter of the the first value given.
  */
 void* filter(void *s) {
+
+    int filter_created;
+    int current_filter = 0;
+
+    thread_args_t *args = (thread_args_t *)args;
+
+    pthread_mutex_lock(&(args->buf_mutex));
+    while (num_primes < num_threads) {
+        if (args->buf_index > 0) {
+
+        }
+    }
+
+
     /* int current; */
     /* queue_t* output_queue = NULL; */
     /*  */
@@ -55,7 +73,7 @@ void* filter(void *s) {
  */
 int main(int argc, char *argv[]) {
 
-    int current_number;
+    int current_number = 3;
 
     /* Parse commandline args: i_max t_max num_threads */
     if (argc < 2) {
@@ -81,7 +99,7 @@ int main(int argc, char *argv[]) {
     pthread_cond_init(&(start_filter.buf_cond), NULL);
 
     start_filter.thread_num = 0;
-    start_filter.buf_size = 0;
+    start_filter.buf_index = 0;
 
     /* Start the generator thread */
     if (pthread_create(
@@ -93,22 +111,24 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    /* Lock the buffer */
-    pthread_mutex_lock(&(start_filter.buf_mutex));
     while (num_primes < num_threads) {
 
+        /* Lock the buffer */
+        pthread_mutex_lock(&(start_filter.buf_mutex));
 
         /* Fill the buffer with 8 entries */
-        for (int i = current_number; i < current_number + 8; i++) {
-            start_filter.buffer[i % BUF_SIZE] = current_number;
+        while (start_filter.buf_index < BUF_SIZE) {
+            start_filter.buffer[start_filter.buf_index] = current_number;
+            current_number+=2;
+            start_filter.buf_index++;
         }
 
         /* Signal that the buffer is filled, and wait for the request of a
          * new buffer */
         pthread_cond_signal(&(start_filter.buf_cond));
         pthread_cond_wait(&(start_filter.buf_cond), &(start_filter.buf_mutex));
+        pthread_mutex_unlock(&(start_filter.buf_mutex));
     }
 
-    pthread_mutex_unlock(&(start_filter.buf_mutex));
     return EXIT_SUCCESS;
 }
