@@ -39,32 +39,6 @@ void* filter(void *s) {
 
         }
     }
-
-
-    /* int current; */
-    /* queue_t* output_queue = NULL; */
-    /*  */
-    /* //TODO fix up this consumer with condition variables, so if queue empty, wait for alert. */
-    /* while(1) { */
-    /*     if (!queue_empty(input_queue)) { */
-    /*         current = dequeue(input_queue); */
-    /*         for (int i = filter_number; i <= current; i += i) { */
-    /*             if (current == i) { */
-    /*                 break; */
-    /*             } */
-    /*         } */
-    /*         #<{(| Current passed filtering, pass on to next filter or create it if it isn't created yet. |)}># */
-    /*         if (!output_queue) { */
-    /*             output_queue = create_queue(); */
-    /*  */
-    /*             //TODO Start new thread doing this same function with the just */
-    /*             // created output queue as input queue. */
-    /*         } */
-    /*         else { */
-    /*             enqueue(current, output_queue); */
-    /*         } */
-    /*     } */
-    /* } */
     return NULL;
 }
 
@@ -116,17 +90,21 @@ int main(int argc, char *argv[]) {
         /* Lock the buffer */
         pthread_mutex_lock(&(start_filter.buf_mutex));
 
-        /* Fill the buffer with 8 entries */
-        while (start_filter.buf_index < BUF_SIZE) {
-            start_filter.buffer[start_filter.buf_index] = current_number;
-            current_number+=2;
-            start_filter.buf_index++;
+        /* If the buffer is full, wait for a
+         * signal that items have been taken */
+        while(!start_filter.buf_index < BUF_SIZE) {
+            pthread_cond_wait(
+                    &(start_filter.buf_cond),
+                    &(start_filter.buf_mutex));
         }
+
+        start_filter.buffer[start_filter.buf_index] = current_number;
+        current_number+=2;
+        start_filter.buf_index++;
 
         /* Signal that the buffer is filled, and wait for the request of a
          * new buffer */
         pthread_cond_signal(&(start_filter.buf_cond));
-        pthread_cond_wait(&(start_filter.buf_cond), &(start_filter.buf_mutex));
         pthread_mutex_unlock(&(start_filter.buf_mutex));
     }
 
