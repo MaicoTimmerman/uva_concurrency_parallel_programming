@@ -50,33 +50,36 @@ void* filter(void *s) {
     while (num_primes < num_threads) {
 
         pthread_mutex_lock(&(args->buf_mutex));
-        pthread_mutex_lock(&(next_args.buf_mutex));
 
         /* If the input buffer is empty, wait for a
          * signal that it has been filled further. */
         while (!(args->buf_index > 0)) {
-            pthread_mutex_unlock(&(next_args.buf_mutex)); //Could cause deadlock?
             pthread_cond_wait(
                     &(args->buf_cond),
                     &(args->buf_mutex));
-            pthread_mutex_lock(&(next_args.buf_mutex)); //Could cause deadlock?
         }
+
+        /* Input found, thus lock the output buffer */
+        pthread_mutex_lock(&(next_args.buf_mutex));
 
         /* If the input buffer is empty, wait for a
          * signal that it has been filled further. */
         while (!(next_args.buf_index < BUF_SIZE)) {
-            pthread_mutex_unlock(&(args->buf_mutex)); //Could cause deadlock?
             pthread_cond_wait(
                     &(next_args.buf_cond),
                     &(next_args.buf_mutex));
-            pthread_mutex_lock(&(args->buf_mutex)); //Could cause deadlock?
         }
 
         if (!filter_created) {
             next_args.filter_value = args->buffer[args->buf_index - 1];
 
+            filter_created = 1;
+
         }
         //magic
+
+        pthread_mutex_unlock(&(next_args.buf_mutex));
+        pthread_mutex_unlock(&(args->buf_mutex));
 
     }
 
