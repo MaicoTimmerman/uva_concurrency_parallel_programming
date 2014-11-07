@@ -5,7 +5,7 @@
 #include "timer.h"
 #include "queue.h"
 
-#define BUF_SIZE 1
+#define BUF_SIZE 4
 
 int g_num_threads;
 
@@ -38,7 +38,6 @@ typedef struct thread_args_t {
 void* filter(void *s) {
 
     int val;
-    double time;
     thread_args_t next_args;
     int filter_created = 0;
 
@@ -48,7 +47,7 @@ void* filter(void *s) {
     /* Print the new prime and raise the number of primes */
     pthread_mutex_lock(&num_primes_mutex);
     g_num_primes++;
-    printf("\x1b[1A");
+    /* printf("\x1b[1A"); */
     printf("Current prime: %d, Total primes (%d/%d)",
             args->filter_value,
             g_num_primes,
@@ -77,7 +76,7 @@ void* filter(void *s) {
 
         /* Fetch the new value from the buffer */
         val = args->buffer.values[(args->buffer.read_index)];
-        args->buffer.read_index = args->buffer.read_index + 1 % BUF_SIZE;
+        args->buffer.read_index = (args->buffer.read_index + 1) % BUF_SIZE;
         args->buffer.buf_size -= 1;
 
         /* Release the input buffer */
@@ -110,16 +109,16 @@ void* filter(void *s) {
         /* Input found and next filter exist, thus lock the output buffer */
         pthread_mutex_lock(&(next_args.buf_mutex));
 
-        /* If the input buffer is empty, wait for a
+        /* If the input buffer of the next filter is full, wait for a
          * signal that it has been filled further. */
-        while (!(next_args.buffer.buf_size == 0)) {
+        while (!(next_args.buffer.buf_size < BUF_SIZE)) {
             pthread_cond_wait(
                     &(next_args.buf_cond),
                     &(next_args.buf_mutex));
         }
 
         next_args.buffer.values[next_args.buffer.write_index] = val;
-        next_args.buffer.write_index = next_args.buffer.write_index + 1 % BUF_SIZE;
+        next_args.buffer.write_index = (next_args.buffer.write_index + 1) % BUF_SIZE;
         next_args.buffer.buf_size += 1;
 
         pthread_cond_signal(&(next_args.buf_cond));
@@ -192,7 +191,7 @@ int main(int argc, char *argv[]) {
 
         /* If the buffer is full, wait for a
          * signal that items have been taken */
-        while(!(start_filter.buffer.buf_size == BUF_SIZE)) {
+        while(!(start_filter.buffer.buf_size < BUF_SIZE)) {
             pthread_cond_wait(
                     &(start_filter.buf_cond),
                     &(start_filter.buf_mutex));
@@ -200,7 +199,7 @@ int main(int argc, char *argv[]) {
 
         start_filter.buffer.values[start_filter.buffer.write_index] = current_number;
         current_number+=2;
-        start_filter.buffer.write_index = start_filter.buffer.write_index + 1 % BUF_SIZE;
+        start_filter.buffer.write_index = (start_filter.buffer.write_index + 1) % BUF_SIZE;
         start_filter.buffer.buf_size += 1;
 
         /* Signal that the buffer is filled, and wait for the request of a
