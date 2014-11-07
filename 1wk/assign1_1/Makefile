@@ -3,10 +3,10 @@ SRCFILES = assign1_1.c file.c timer.c simulate.c
 TARNAME = assign1_1.tgz
 
 # i_max t_max num_threads
-RUNARGS_T1 = 1000000 5000 1
-RUNARGS_T2 = 1000000 5000 2
-RUNARGS_T3 = 1000000 5000 4
-RUNARGS_T4 = 1000000 5000 8
+RUNARGS_T1 = 1000000 10000 1
+RUNARGS_T2 = 1000000 10000 2
+RUNARGS_T3 = 1000000 10000 4
+RUNARGS_T4 = 1000000 10000 8
 
 IMAGEVIEW = display
 CC = gcc
@@ -30,10 +30,10 @@ $(PROGNAME): $(OBJFILES)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 run: $(PROGNAME)
-	prun -v -np 1 $(PROGNAME) $(RUNARGS_T1)
-	prun -v -np 1 $(PROGNAME) $(RUNARGS_T2)
-	prun -v -np 1 $(PROGNAME) $(RUNARGS_T3)
-	prun -v -np 1 $(PROGNAME) $(RUNARGS_T4)
+	# prun -np 1 $(PROGNAME) $(RUNARGS_T1)
+	# prun -np 1 $(PROGNAME) $(RUNARGS_T2)
+	# prun -np 1 $(PROGNAME) $(RUNARGS_T3)
+	prun -np 1 $(PROGNAME) $(RUNARGS_T4)
 
 cgdb: $(PROGNAME)
 	cgdb --args $(PROGNAME) $(RUNARGS_T3)

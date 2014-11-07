@@ -138,8 +138,8 @@ int main(int argc, char *argv[])
     finished = simulate(i_max, t_max, num_threads, old, current, next);
 
     time = timer_end();
-    printf("Took %g seconds\n", time);
-    printf("Normalized: %g seconds\n", time / (i_max * t_max));
+    printf("%g\n", time);
+    /* printf("Normalized: %g seconds\n", time / (i_max * t_max)); */
 
     file_write_double_array("result.txt", finished, i_max);
 

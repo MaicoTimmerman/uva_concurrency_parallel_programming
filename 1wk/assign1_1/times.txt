@@ -1,0 +1,29 @@
+run 100000 10000
+1 threads
+3.0253
+2 threads
+1.65682
+4 threads
+0.98369
+8 threads
+0.814654
+
+run 1000000 10000
+1 threads
+39.8127
+2 threads
+15.6851
+4 threads
+8.97585
+8 threads
+6.69932
+
+run 10000000 10000
+1 threads
+391.647
+2 threads
+218.214
+4 threads
+187.314
+8 threads
+186.477
