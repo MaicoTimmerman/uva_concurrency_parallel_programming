@@ -6,7 +6,7 @@
 
 #define BUF_SIZE 8
 
-int num_primes = 0;
+int num_primes;
 int num_threads;
 pthread_mutex_t num_primes_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -29,6 +29,7 @@ typedef struct thread_args_t {
 void* filter(void *s) {
 
     int filter_created = 0;
+    int val;
     thread_args_t next_args;
 
     /* Get the arguments of this thread. */
@@ -59,7 +60,31 @@ void* filter(void *s) {
                     &(args->buf_mutex));
         }
 
-        /* Input found, thus lock the output buffer */
+        /* Fetch the new value from the buffer */
+        val = args->buffer[(args->buf_index) - 1];
+        (args->buf_index)--;
+
+        /* Release the input buffer */
+        pthread_cond_signal(&(args->buf_cond));
+        pthread_mutex_unlock(&(args->buf_mutex));
+
+        /* If the val is dividable by this filter number, it is not
+         * prime, therefor discard and try again. */
+        if ((val % (args->filter_value)) == 0) {
+            continue;
+        }
+
+        /* If it is not dividable, then pass to the next filter.
+         * If no such filter exist, then a prime has been found. */
+        if (!filter_created) {
+            next_args.filter_value = args->buffer[args->buf_index - 1];
+            printf("Im creating a new filter!");
+            filter_created = 1;
+            //TODO create a new filter.
+            continue;
+        }
+
+        /* Input found and next filter exist, thus lock the output buffer */
         pthread_mutex_lock(&(next_args.buf_mutex));
 
         /* If the input buffer is empty, wait for a
@@ -70,16 +95,11 @@ void* filter(void *s) {
                     &(next_args.buf_mutex));
         }
 
-        if (!filter_created) {
-            next_args.filter_value = args->buffer[args->buf_index - 1];
+        next_args.buffer[next_args.buf_index] = val;
+        next_args.buf_index++;
 
-            filter_created = 1;
-
-        }
-        //magic
-
+        pthread_cond_signal(&(next_args.buf_cond));
         pthread_mutex_unlock(&(next_args.buf_mutex));
-        pthread_mutex_unlock(&(args->buf_mutex));
 
     }
 
@@ -92,6 +112,7 @@ void* filter(void *s) {
 int main(int argc, char *argv[]) {
 
     int current_number = 3;
+    num_primes = 0;
 
     /* Parse commandline args: i_max t_max num_threads */
     if (argc < 2) {
@@ -150,6 +171,10 @@ int main(int argc, char *argv[]) {
          * new buffer */
         pthread_cond_signal(&(start_filter.buf_cond));
         pthread_mutex_unlock(&(start_filter.buf_mutex));
+    }
+    if (pthread_join(start_filter.pthread, NULL)) {
+        fprintf(stderr, "An error happened while join first filter");
+        return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;

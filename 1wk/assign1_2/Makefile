@@ -1,12 +1,12 @@
 PROGNAME = assign1_2.out
-SRCFILES = assign1_2.c file.c timer.c simulate.c
+SRCFILES = assign1_2.c timer.c
 TARNAME = assign1_2.tgz
 
 # i_max t_max num_threads
-RUNARGS_T1 = 1000000 1000 100
-RUNARGS_T2 = 1000000 1000 500
-RUNARGS_T3 = 1000000 1000 1000
-RUNARGS_T4 = 1000000 1000 5000
+RUNARGS_T1 = 100
+RUNARGS_T2 = 500
+RUNARGS_T3 = 1000
+RUNARGS_T4 = 5000
 
 IMAGEVIEW = display
 CC = gcc
@@ -39,7 +39,7 @@ valgrind: $(PROGNAME)
 	valgrind ./$(PROGNAME) $(RUNARGS_T3)
 
 runlocal: $(PROGNAME)
-	./$(PROGNAME) $(RUNARGS_T4)
+	./$(PROGNAME) $(RUNARGS_T2)
 
 
 todo:
