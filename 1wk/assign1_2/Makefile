@@ -33,10 +33,10 @@ run: $(PROGNAME)
 	prun -v -np 1 $(PROGNAME) $(RUNARGS_T3)
 
 cgdb: $(PROGNAME)
-	cgdb --args $(PROGNAME) $(RUNARGS_T3)
+	cgdb --args $(PROGNAME) $(RUNARGS_T2)
 
 valgrind: $(PROGNAME)
-	valgrind ./$(PROGNAME) $(RUNARGS_T3)
+	valgrind ./$(PROGNAME) $(RUNARGS_T2)
 
 runlocal: $(PROGNAME)
 	./$(PROGNAME) $(RUNARGS_T2)
