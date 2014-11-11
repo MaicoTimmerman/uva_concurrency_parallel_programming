@@ -178,7 +178,18 @@ on one thread by the time it took to run it on two, four, six and eight threads.
 \end{figure}
 
 \subsection{Sieve of Eratosthenes}
+On the DAS4 machine the program was unfortunately hard-capped at a certain
+number of threads, thus making it it impossible to generate more than 1000
+primes. The results presented will thus only include prime generation durations
+of no more than 1000 primes. The graph below presents how the amount of primes
+the program generates relates to the total runtime it needs.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{chart1_2}
+    \caption{Total runtime of prime generator with different amounts of total
+        primes to be generated.}
+\end{figure}
 
 
 \section{Discussion}
@@ -197,7 +208,14 @@ speed-up achieved is also lower.
 
 
 \subsection{Sieve of Eratosthenes}
-
+Here it can be seen that increasing the amount of primes to be generated has a
+linear relation to how long it takes to generate them. This is not what one
+would expect, since double the amount of primes means that much more than double
+the amount of numbers need to be checked. This linear growth can however be
+explained by realising that each new prime creates a new thread for checking. So
+the when generating more primes, the program also becomes increasingly
+concurrent. This again helps reduce the total runtime by utilising the large
+amount of cores on the DAS4 machine.
 
 
 
