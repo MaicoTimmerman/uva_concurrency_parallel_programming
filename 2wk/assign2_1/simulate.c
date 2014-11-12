@@ -30,7 +30,7 @@ int g_t_max, g_i_max;
 void calc_wave(void)
 {
     for (int t = 0; t < g_t_max; t++) {
-        #pragma omp parallel for schedule( static)
+        #pragma omp parallel for schedule(static) num_threads(8)
         for (int i = 0; i < g_i_max; i++) {
             next[i] = (2*cur[i]) - old[i] + (0.15*(cur[i-1] - (2*cur[i] - cur[i+1])));
         }
