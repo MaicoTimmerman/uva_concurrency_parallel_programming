@@ -26,11 +26,13 @@
 
 double *old, *cur, *next, *temp;
 int g_t_max, g_i_max;
+int g_num_threads;
 
 void calc_wave(void)
 {
     for (int t = 0; t < g_t_max; t++) {
-        #pragma omp parallel for schedule(static) num_threads(8)
+        /* Different methods of scheduling, static, dynamic, guided  */
+        #pragma omp parallel for schedule(static) num_threads(NUM_THREADS)
         for (int i = 0; i < g_i_max; i++) {
             next[i] = (2*cur[i]) - old[i] + (0.15*(cur[i-1] - (2*cur[i] - cur[i+1])));
         }
@@ -51,6 +53,9 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
     next = next_array;
     g_i_max = i_max;
     g_t_max = t_max;
+    g_num_threads = num_threads;
+
+    calc_wave();
 
     return current_array;
 }

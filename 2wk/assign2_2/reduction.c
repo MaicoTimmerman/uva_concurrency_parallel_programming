@@ -16,10 +16,15 @@ double sum (double* vec, int len)
 double reduce (double (fun)(double, double),
         double* vec, int len, double neutral)
 {
-    int i ;
+    int i;
     double accu = neutral;
     for (i = 0; i < len; i++) {
         accu = fun(accu, vec[i]);
     }
     return accu;
+}
+
+int main(int argc, char *argv[])
+{
+    return EXIT_SUCCESS;
 }
