@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "timer.h"
+
 int g_matrix_n, g_matrix_m, g_num_threads;
 
 typedef struct matrix_t {
@@ -121,6 +123,9 @@ void print_matrix(matrix_t* matrix)
 int main(int argc, char* argv[])
 {
 
+    double time;
+    int* sum_vector;
+
     /* We allow only square matrices */
     g_matrix_n = g_matrix_m = atoi(argv[1]);
     g_num_threads = atoi(argv[2]);
@@ -132,13 +137,17 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    int* sum_vector;
+    timer_start();
+
     sum_vector = sum_rows(matrix);
     if (!sum_vector) {
         return EXIT_FAILURE;
     }
 
-    print_matrix(matrix);
+    time = timer_end();
+    printf("%d, %d, %lf", g_matrix_n, g_num_threads, time);
+
+    /* print_matrix(matrix); */
 
     /* Free this stupid shit */
     for (int i = 0; i < g_matrix_n; i++) {

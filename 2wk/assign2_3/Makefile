@@ -1,5 +1,5 @@
 PROGNAME = assign2_3.out
-SRCFILES = vectors.c
+SRCFILES = vectors.c timer.c
 TARNAME = assign2_3.tgz
 
 RUNARGS = 100 4
