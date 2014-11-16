@@ -125,13 +125,17 @@ the process.\\
 
 \texttt{\#pragma omp parallel for reduction([operator]:[var])}\\
 
-However this process is limited to binary operators only. When parallelizing for
-with a function, a different approach is needed.  Because reduction functions
-for our program must be associative, we can try to split the problem up in as
-many different parts as possible. This done by creating vectors of the size
-$2^n$, These vectors can be reduced in $\log(n)$ steps, to a single value.
-Continuously taking the biggest vector of size $2^n$ the problem is reduced by
-creating as many as possible parallelizing pieces.
+However this process is limited to binary operators only. Reduction with a user
+defined function is not possible in OpenMPs implementation. Therefor the
+expected result on such a reduction is a speed down, due to the extra overhead
+created during thread creation.
+
+When parallelizing for with a function, a different approach is needed. Because
+reduction functions for our program must be associative, we can try to split the
+problem up in as many different parts as possible. This done by creating vectors
+of the size $2^n$, These vectors can be reduced in $\log(n)$ steps, to a single
+value.  Continuously taking the biggest vector of size $2^n$ the problem is
+reduced by creating as many as possible parallelizing pieces.
 
 For our program we measure reductions of vectors of sizes, $10^3$, $10^4$,
 $10^5$, $10^6$ and $10^7$, with number of threads equal to 1,2,4,6 and 8. For
@@ -139,6 +143,40 @@ testing a purposes a vector of sinus values is used to calculate the speedups.
 For the function a double addition is used, $fun(a,b) = a+a+b+b$.
 
 \section{Results}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{sum}
+    \caption{Speed-up factor of using OpenMP sum reduction using different
+    number of threads.}
+\end{figure}
+
+When reducing a simple sum reduction there is a huge speedup in using multiple
+threads, this is as expected. For a small vector the overhead caused more
+slowdown then the parallelizing caused speed profit. But for biggest vectors,
+the speedup was clearly present.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{reduce}
+    \caption{Speed-up factor of using OpenMP with critical section for
+    reduction, using different number of threads.}
+\end{figure}
+
+As expected, the reduction with a user-defined function caused a slow down in
+execution time. The results were quite extreme. Execution was ten times slower
+then execution with a single thread (normal execution).
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{reduce2}
+    \caption{Speed-up factor of using OpenMP loop optimization and optimized
+    reduction using different number of threads.}
+\end{figure}
+
+For the self designed reduction, there was a bigger overhead and therefor a
+speed-up was gained while using bigger vectors.
 
 \section{Discussion}
 
