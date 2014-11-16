@@ -94,7 +94,7 @@ double reduce2(double (fun)(double, double),
 }
 
 double fun(double a, double b) {
-    return a+b;
+    return (a+a+b+b);
 }
 
 int main(int argc, char *argv[])
@@ -132,7 +132,6 @@ int main(int argc, char *argv[])
     if (strcmp(argv[3], "sequential") == 0) {
         custom_reduce_method = 0;
     } else {
-        printf("Using custom reduce method");
         custom_reduce_method = 1;
     }
 
@@ -160,8 +159,7 @@ int main(int argc, char *argv[])
     /* Stop timing */
 
     time = timer_end();
-    printf("sum accu: %g\n", accu);
-    printf("Took %g seconds\n", time);
+    printf("%d, %d, %g\n",num_threads, vec_size, time);
 
     free(vec);
     vec = NULL;

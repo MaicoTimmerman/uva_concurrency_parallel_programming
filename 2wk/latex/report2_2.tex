@@ -134,7 +134,9 @@ Continuously taking the biggest vector of size $2^n$ the problem is reduced by
 creating as many as possible parallelizing pieces.
 
 For our program we measure reductions of vectors of sizes, $10^3$, $10^4$,
-$10^5$, $10^6$ and $10^7$, with number of threads equal to 1,2,4,6 and 8.
+$10^5$, $10^6$ and $10^7$, with number of threads equal to 1,2,4,6 and 8. For
+testing a purposes a vector of sinus values is used to calculate the speedups.
+For the function a double addition is used, $fun(a,b) = a+a+b+b$.
 
 \section{Results}
 
