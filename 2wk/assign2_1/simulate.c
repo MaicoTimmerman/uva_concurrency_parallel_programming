@@ -23,7 +23,7 @@ void calc_wave(void)
 {
     for (int t = 0; t < g_t_max; t++) {
         /* Different methods of scheduling, static, dynamic, guided  */
-        #pragma omp parallel for schedule(static) num_threads(NUM_THREADS)
+        #pragma omp parallel for schedule(static) num_threads(g_num_threads)
         for (int i = 0; i < g_i_max; i++) {
             next[i] = (2*cur[i]) - old[i] + (0.15*(cur[i-1] - (2*cur[i] - cur[i+1])));
         }
