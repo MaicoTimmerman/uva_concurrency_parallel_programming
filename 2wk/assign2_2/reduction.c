@@ -47,14 +47,15 @@ double reduce2(double (fun)(double, double),
     while (vec_len > 1) {
 
         calc_vec_len = pow(2, floor(log2(vec_len)));
+        calc_vec = vec;
 
         /* Current vector with the length == 2^n */
         while (calc_vec_len > 1) {
 
-            /* halveer telkens de lengte van huidige vector door functie
-             * toe te passen op alle tweetallen */
+
+            /* Halve the vector by passing fun on to all sets */
             for (int i = 0; i < calc_vec_len; i+=2) {
-                calc_vec[i] = fun(vec[(i*2)], vec[(i*2)+1]);
+                calc_vec[i] = fun(calc_vec[(i*2)], calc_vec[(i*2)+1]);
             }
             calc_vec_len = calc_vec_len / 2;
         }
