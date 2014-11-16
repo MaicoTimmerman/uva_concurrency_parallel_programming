@@ -110,7 +110,21 @@
 
 \section{Introduction}
 
+In this assignment we take another look at the wave equation simulation, now
+with a different kind of parallel programming. This time OpenMP is used to make
+our code concurrent. OpenMP works by the programmer stating some part of the
+code can be run in parallel (in this case a for-loop) and then the compiler will
+compile the code so that it is concurrent.
+
 \section{Method}
+
+Implementing OpenMP is quite simple, all that needed to be done was to write a
+sequential program for the wave equation simulation, and then state that a
+certain for-loop can be done in parallel using the OpenMP commands. There are
+however several different ways to parallelize a for-loop and we will test all of
+them to see which is the most effective. Those results will then again be
+compared to the results we found with our results from the previous assignment
+using pthreads to parallelize this program.
 
 \section{Results}
 
