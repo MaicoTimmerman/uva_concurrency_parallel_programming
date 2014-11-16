@@ -19,12 +19,12 @@ int* sum_rows(matrix_t* matrix)
         return NULL;
     }
 
-    //#pragma omp parallel for schedule(static) num_threads(g_num_threads)
+    #pragma omp parallel for schedule(static) num_threads(g_num_threads)
     for (int i = 0; i < g_matrix_n; i++) {
         sum_vector[i] = 0;
     }
 
-    //#pragma omp parallel for schedule(static) num_threads(g_num_threads)
+    #pragma omp parallel for schedule(static) num_threads(g_num_threads)
     for (int n = 0; n < g_matrix_n; n++) {
         for (int m = 0; m < matrix->row_size[n]; m++) {
             sum_vector[n] += matrix->values[n][m];
