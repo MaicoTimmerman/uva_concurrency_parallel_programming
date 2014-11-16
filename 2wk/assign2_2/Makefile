@@ -2,7 +2,7 @@ PROGNAME = assign2_2.out
 SRCFILES = reduction.c timer.c
 TARNAME = assign2_2.tgz
 
-RUNARGS = 4 100 #num_threads vec_size
+RUNARGS = 4 7 custom #num_threads vec_size [reduce_method]
 
 CC = gcc
 
@@ -37,4 +37,4 @@ dist:
 	tar cvzf $(TARNAME) Makefile *.c *.h
 
 clean:
-	rm -fv $(PROGNAME) $(OBJFILES) $(TARNAME) result.txt plot.png
+	rm -fv $(PROGNAME) $(OBJFILES) $(TARNAME)
