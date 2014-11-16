@@ -1,0 +1,77 @@
+Using Pthreads:
+
+run 100000 10000
+1 threads: 2.96759 seconds
+2 threads: 1.63472 seconds
+4 threads: 0.96830 seconds
+8 threads: 0.856138 seconds
+
+run 1000000 10000
+1 threads: 39.3225 seconds
+2 threads: 15.4693 seconds
+4 threads: 9.07797 seconds
+8 threads: 7.00861 seconds
+
+run 10000000 10000
+1 threads: 390.874 seconds
+2 threads: 215.316 seconds
+4 threads: 188.874 seconds
+8 threads: 187.507 seconds
+
+Using OpenMP static
+run 100000 10000
+1 threads: 2.944160 seconds
+2 threads: 1.538940 seconds
+4 threads: 0.840358 seconds
+8 threads: 0.475995 seconds
+
+run 1000000 10000
+1 threads: 31.4830 seconds
+2 threads: 15.3797 seconds
+4 threads: 8.12910 seconds
+8 threads: 6.70975 seconds
+
+run 10000000 10000
+1 threads: 307.919 seconds
+2 threads: 215.001 seconds
+4 threads: 184.810 seconds
+8 threads: 186.988 seconds
+
+Using OpenMP guided:
+run 100000 10000
+1 threads: 3.14381 seconds
+2 threads: 1.64261 seconds
+4 threads: 1.14287 seconds
+8 threads: 1.12650 seconds
+
+run 1000000 12000
+1 threads: 32.9610 seconds
+2 threads: 16.5915 seconds
+4 threads: 13.8986 seconds
+8 threads: 13.4341 seconds
+
+run 10000000 20000
+1 threads: 322.480 seconds
+2 threads: 218.496 seconds
+4 threads: 173.340 seconds
+8 threads: 178.031 seconds
+
+Using OpenMP dynamic:
+run 100000 10000
+1 threads: 3.16843 seconds
+2 threads: 1.79452 seconds
+4 threads: 1.13251 seconds
+8 threads: 1.06718 seconds
+
+run 1000000 10000
+1 threads: 33.2024 seconds
+2 threads: 16.542 seconds
+4 threads: 11.4422 seconds
+8 threads: 13.7334 seconds
+
+run 10000000 10000
+1 threads: 322.575 seconds
+2 threads: 221.012 seconds
+4 threads: 175.334 seconds
+8 threads: 174.549 seconds
+

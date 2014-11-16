@@ -24,7 +24,7 @@ double reduce(double (fun)(double, double),
 {
     int i;
     double accu = neutral;
-    #pragma omp parallel for num_threads(g_num_threads)
+    /* #pragma omp parallel for num_threads(g_num_threads) */
     for (i = 0; i < len; i++) {
         accu = fun(accu, vec[i]);
     }
@@ -34,13 +34,44 @@ double reduce(double (fun)(double, double),
 double reduce2(double (fun)(double, double),
         double* vec, int len, double neutral)
 {
-    int i;
-    double accu = neutral;
-    int prev_2_pow = pow(2, floor(log2(len)));
-    #pragma omp parallel for num_threads(g_num_threads)
-    for (i = 0; i < len; i++) {
-        accu = fun(accu, vec[i]);
+    int vec_len;
+    int calc_vec_len;
+    double accu;
+
+    accu = neutral;
+    vec_len = len;
+    double *calc_vec = (double*)malloc(sizeof(double)*vec_len);
+    double *free_calc_vec = calc_vec;
+
+    /* While the vector has more then one value, keep calculating */
+    while (vec_len > 1) {
+
+        calc_vec_len = pow(2, floor(log2(vec_len)));
+        fprintf(stderr, "calc_vec_len: %d", calc_vec_len);
+        calc_vec = vec;
+
+        /* Current vector with the length == 2^n */
+        while (calc_vec_len > 1) {
+
+            /* halveer telkens de lengte van huidige vector door functie
+             * toe te passen op alle tweetallen */
+            for (int i = 0; i < calc_vec_len; i+=2) {
+                calc_vec[i] = fun(calc_vec[(i*2)], calc_vec[(i*2)]);
+            }
+            calc_vec_len = calc_vec_len / 2;
+        }
+
+        accu = fun(accu, calc_vec[0]);
+
+        /* The calc_vec is converted into a single number */
+        vec_len = vec_len - calc_vec_len;
+        vec = vec+calc_vec_len;
     }
+
+    accu = fun(accu, vec[0]);
+
+    free(free_calc_vec);
+
     return accu;
 }
 
@@ -95,10 +126,14 @@ int main(int argc, char *argv[])
     /* accu = sum(vec, vec_size); */
     accu = reduce(fun, vec, vec_size, 0);
     printf("sum accu: %g\n", accu);
+    accu = reduce2(fun, vec, vec_size, 0);
+    printf("sum accu: %g\n", accu);
 
     /* Stop timing */
     time = timer_end();
     printf("Took %g seconds\n", time);
+
+    free(vec);
 
     return EXIT_SUCCESS;
 }

@@ -30,6 +30,9 @@ run: $(PROGNAME)
 runlocal: $(PROGNAME)
 	./$(PROGNAME) $(RUNARGS)
 
+valgrind: $(PROGNAME)
+	valgrind ./$(PROGNAME) $(RUNARGS)
+
 dist:
 	tar cvzf $(TARNAME) Makefile *.c *.h
 
