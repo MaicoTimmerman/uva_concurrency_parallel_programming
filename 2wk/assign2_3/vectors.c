@@ -13,6 +13,7 @@ typedef struct matrix_t {
 
 void print_matrix(matrix_t*);
 
+/* Sum each row of the provided matrix, using the row_size to determine how many items are in a row */
 int* sum_rows(matrix_t* matrix)
 {
     int *sum_vector = malloc(sizeof(int) * g_matrix_n);
@@ -35,6 +36,7 @@ int* sum_rows(matrix_t* matrix)
     return sum_vector;
 }
 
+/* Create a matrix, either triangular or non triangular and fill it with the appropriate values */
 matrix_t* matrix(int is_triangular)
 {
     /* Malloc matrix struct */
@@ -94,6 +96,7 @@ matrix_t* init_matrix_triangular()
     return matrix(1);
 }
 
+/* Print a matrix */
 void print_matrix(matrix_t* matrix)
 {
     for (int n = 0; n < g_matrix_n; n++) {
