@@ -110,11 +110,48 @@
 
 \section{Introduction}
 
+For this assignment we had to create a program that would create a upper
+triangular matrix and calculates the sums of the rows in parallel using OpenMP.
+
 \section{Method}
+
+The program first allocates and fills the matrix with the appropriate values;
+$column number + row number$. While this is being done, for the triangular
+matrix we also keep track of the number of values in each row, since that
+decreases by one every subsequent row. Afterwards the matrix gets summed,
+creating a vector of the sums of each row.
 
 \section{Results}
 
+In this program parallelising with OpenMP proved highly ineffective. On the
+contrary, running with more than one thread made the program slower instead of
+faster. The more threads used, the longer the runtime, as can be seen in the
+graphs below as well.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{1000}
+    \caption{Runtime of matrix generation and summing. Generates and sums 100
+    matrices of size 1000x1000. Comparing Static, Guided and Dynamic (chunk size
+    = 4 * matrix width / number of threads) scheduling.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{1000}
+    \caption{Runtime of matrix generation and summing. Generates and sums 100
+    matrices of size 5000x5000. Comparing Static, Guided and Dynamic (chunk size
+    = 4 * matrix width / number of threads) scheduling.}
+\end{figure}
+
 \section{Discussion}
+As stated above, parallelising this program using OpenMP did not have a great
+effect. The program actually got slower the more threads we used. This is most
+likely caused by overhead that is created by the creating and synchronising of
+threads by OpenMP. This was not at all what we expected to happen, since this
+program looks like a program that should be good for parallelising, as it is
+doing matrix operations. So we were surprised to find that the overhead that is
+caused is greater the actual benefit of parallelisation.
 
 
 

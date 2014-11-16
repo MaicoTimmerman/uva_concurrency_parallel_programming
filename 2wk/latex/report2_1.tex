@@ -1,4 +1,5 @@
 \documentclass[a4paper,12px]{article}
+
 \usepackage{graphicx}
 \usepackage[english]{babel}
 \usepackage{fancyhdr}
@@ -148,9 +149,10 @@ when running with more than one thread.
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{dynamic}
-    \caption{Speed-up factor of using OpenMP dynamic scheduling compared to the
-    same amount of threads and amplitude points using the pthread approach. Runs
-    a total of 10000 time steps over different amounts of amplitude points.}
+    \caption{Speed-up factor of using OpenMP dynamic scheduling (chunk size
+        = 4 * amplitude points / number of threads) compared to the same amount of
+    threads and amplitude points using the pthread approach. Runs a total of
+    10000 time steps over different amounts of amplitude points.}
 \end{figure}
 
 \begin{figure}[H]
