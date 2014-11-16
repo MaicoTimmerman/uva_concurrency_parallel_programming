@@ -115,6 +115,14 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
+    for (int i = 0; i < g_matrix_n; i++) {
+        free(matrix->values[i]);
+    }
+    free(matrix->values);
+    free(matrix->row_size);
+    free(matrix);
+    free(sum_vector);
+
 
     return EXIT_SUCCESS;
 }
