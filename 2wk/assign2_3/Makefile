@@ -2,7 +2,7 @@ PROGNAME = assign2_3.out
 SRCFILES = vectors.c timer.c
 TARNAME = assign2_3.tgz
 
-RUNARGS = 100 4
+RUNARGS = 100 4 #n*m, threads
 
 CC = gcc
 
