@@ -133,16 +133,31 @@ created during thread creation.
 When parallelizing for with a function, a different approach is needed. Because
 reduction functions for our program must be associative, we can try to split the
 problem up in as many different parts as possible. This done by creating vectors
-of the size $2^n$, These vectors can be reduced in $\log(n)$ steps, to a single
-value.  Continuously taking the biggest vector of size $2^n$ the problem is
-reduced by creating as many as possible parallelizing pieces.
+of the size $2^n$, These vectors can be reduced in $\log(n)$ steps, using a
+divide and conquer algorithm to a single value. Continuously taking the biggest
+vector of size $2^n$ the problem is reduced by creating as many as possible
+parallelizing pieces.
 
 For our program we measure reductions of vectors of sizes, $10^3$, $10^4$,
 $10^5$, $10^6$ and $10^7$, with number of threads equal to 1,2,4,6 and 8. For
 testing a purposes a vector of sinus values is used to calculate the speedups.
-For the function a double addition is used, $fun(a,b) = a+a+b+b$.
+For the function a double addition is used, $fun(a,b) = a+a+b+b$. All
+simulations are run ten times to get somewhat of an average.
 
 \section{Results}
+
+When reducing a simple sum reduction there is a huge speedup in using multiple
+threads, this is as expected. For a small vector the overhead caused more
+slowdown then the parallelizing caused speed profit. But for biggest vectors,
+the speedup was clearly present.\\
+
+As expected, the reduction with a user-defined function caused a slow down in
+execution time. The results were quite extreme. Execution was ten times slower
+then execution with a single thread (normal execution).\\
+
+For the self designed reduction, there was a bigger overhead and therefor a
+speed-up was gained only while using bigger vectors. When using smaller vectors
+the overhead was outweighing the speedup gained from the parallelized code.
 
 \begin{figure}[H]
     \centering
@@ -151,10 +166,6 @@ For the function a double addition is used, $fun(a,b) = a+a+b+b$.
     number of threads.}
 \end{figure}
 
-When reducing a simple sum reduction there is a huge speedup in using multiple
-threads, this is as expected. For a small vector the overhead caused more
-slowdown then the parallelizing caused speed profit. But for biggest vectors,
-the speedup was clearly present.
 
 \begin{figure}[H]
     \centering
@@ -163,9 +174,6 @@ the speedup was clearly present.
     reduction, using different number of threads.}
 \end{figure}
 
-As expected, the reduction with a user-defined function caused a slow down in
-execution time. The results were quite extreme. Execution was ten times slower
-then execution with a single thread (normal execution).
 
 
 \begin{figure}[H]
@@ -175,11 +183,16 @@ then execution with a single thread (normal execution).
     reduction using different number of threads.}
 \end{figure}
 
-For the self designed reduction, there was a bigger overhead and therefor a
-speed-up was gained while using bigger vectors.
 
 \section{Discussion}
 
+When parallelizing when OpenMP, default implementation can cause performance
+loss. Therefor careful planning is required to get optimal performance from the
+program.
+
+For future practice, a better implementation of the divide and conquer algorithm
+can be made. Better tests can be done to give more precise conclusions about
+speedups and performance gain.
 
 
 % =================================== REFERENCES ===================================
