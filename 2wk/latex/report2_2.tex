@@ -118,22 +118,20 @@ the reduction and reducing these chunks into the result.
 
 \section{Method}
 
-Using OpenMP for trivial parallelizing (e.g. addition of all
+Using OpenMP for trivial parallelizing (e.g.\ addition of all
 vector values)  is simple, a single statements makes the code run parallel. In
 this situation an expected speedup is linear with the number of threads used in
-the process.
+the process.\\
 
-\texttt{#pragma omp parallel for reduction([operator]:[var])}
+\texttt{\#pragma omp parallel for reduction([operator]:[var])}\\
 
-However this process is limited to binary operators only. When paralellizing for
-with a function, a different approach is needed.
-
-
-Because reduction functions for our program must be associative, we can try to
-split the problem up in as many different parts as possible. This done by
-creating vectors of the size $2^n$, These vectors can be reduced in $\log(n)$
-steps, to a single value. Continuously taking the biggest vector of size $2^n$
-the problem is reduced by creating as many as possible paralellizing pieces.
+However this process is limited to binary operators only. When parallelizing for
+with a function, a different approach is needed.  Because reduction functions
+for our program must be associative, we can try to split the problem up in as
+many different parts as possible. This done by creating vectors of the size
+$2^n$, These vectors can be reduced in $\log(n)$ steps, to a single value.
+Continuously taking the biggest vector of size $2^n$ the problem is reduced by
+creating as many as possible parallelizing pieces.
 
 For our program we measure reductions of vectors of sizes, $10^3$, $10^4$,
 $10^5$, $10^6$ and $10^7$, with number of threads equal to 1,2,4,6 and 8.
