@@ -3,8 +3,15 @@
 
 int main(int argc, char* argv[])
 {
-    int get_fucked_lel = 9001;
-    int nigger = EXIT_SUCCESS;
+    int matrix_n, matrix_m = 10;
+    int **matrix = malloc(sizeof(int*) * matrix_n);
+    for (int i = 0; i < matrix_n; i++) {
+        matrix[i] = malloc(sizeof(int) * matrix_m);
+    }
 
-    return nigger;
+    matrix[4][1] = 6;
+    /* printf("%d", matrix[4][1]); */
+
+
+    return EXIT_SUCCESS;
 }
