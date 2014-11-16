@@ -19,16 +19,33 @@ double sum(double* vec, int len)
 }
 
 
-double reduce (double (fun)(double, double),
+double reduce(double (fun)(double, double),
         double* vec, int len, double neutral)
 {
     int i;
     double accu = neutral;
-    #pragma omp parallel for num_threads(g_num_threads) reduction(+:accu)
+    #pragma omp parallel for num_threads(g_num_threads)
     for (i = 0; i < len; i++) {
         accu = fun(accu, vec[i]);
     }
     return accu;
+}
+
+double reduce2(double (fun)(double, double),
+        double* vec, int len, double neutral)
+{
+    int i;
+    double accu = neutral;
+    int prev_2_pow = pow(2, floor(log2(len)));
+    #pragma omp parallel for num_threads(g_num_threads)
+    for (i = 0; i < len; i++) {
+        accu = fun(accu, vec[i]);
+    }
+    return accu;
+}
+
+double fun(double a, double b) {
+    return a+b;
 }
 
 int main(int argc, char *argv[])
@@ -75,7 +92,8 @@ int main(int argc, char *argv[])
     timer_start();
 
     /* Calculate a reduced vector with openMP */
-    accu = sum(vec, vec_size);
+    /* accu = sum(vec, vec_size); */
+    accu = reduce(fun, vec, vec_size, 0);
     printf("sum accu: %g\n", accu);
 
     /* Stop timing */
