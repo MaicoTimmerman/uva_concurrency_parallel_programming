@@ -3,12 +3,13 @@
 #include <string.h>
 
 int g_matrix_n, g_matrix_m, g_num_threads;
-char* g_schedule;
 
 typedef struct matrix_t {
     int** values;
     int* row_size;
 } matrix_t;
+
+void print_matrix(matrix_t*);
 
 int* sum_rows(matrix_t* matrix)
 {
@@ -18,16 +19,18 @@ int* sum_rows(matrix_t* matrix)
         return NULL;
     }
 
+    //#pragma omp parallel for schedule(static) num_threads(g_num_threads)
     for (int i = 0; i < g_matrix_n; i++) {
         sum_vector[i] = 0;
     }
 
-    #pragma omp parallel for schedule(g_schedule) num_threads(g_num_threads)
+    //#pragma omp parallel for schedule(static) num_threads(g_num_threads)
     for (int n = 0; n < g_matrix_n; n++) {
         for (int m = 0; m < matrix->row_size[n]; m++) {
             sum_vector[n] += matrix->values[n][m];
         }
     }
+    return sum_vector;
 }
 
 matrix_t* matrix(int is_triangular)
@@ -54,27 +57,20 @@ matrix_t* matrix(int is_triangular)
     }
 
     /* Malloc matrix columns */
-    #pragma omp parallel for schedule(g_schedule) num_threads(g_num_threads)
+    #pragma omp parallel for schedule(static) num_threads(g_num_threads)
     for (int i = 0; i < g_matrix_n; i++) {
         matrix->row_size[i] = g_matrix_n - (i * is_triangular);
         matrix->values[i] = malloc(sizeof(int) * matrix->row_size[i]);
         if (!matrix->values[i]) {
             fprintf(stderr, "Failed to malloc matrix[%d]\n", i);
-            for (int x = 0; x < i; x++) {
-                free(matrix->values[x]);
-            }
-            free(matrix->values);
-            free(matrix);
-            return NULL;
         }
     }
 
     /* Matrix[n][m] n = vertical, m = horizontal. eg. Matrix[2][3] is 2nd row (from top) 3rd value. */
     /* n is vert size m = hori size */
-    int max_val = 2;
-    #pragma omp parallel for schedule(g_schedule) num_threads(g_num_threads)
+    #pragma omp parallel for schedule(static) num_threads(g_num_threads)
     for (int n = 0; n < g_matrix_n; n++) {
-        #pragma omp parallel for schedule(g_schedule) num_threads(g_num_threads)
+        //#pragma omp parallel for schedule(static) num_threads(g_num_threads)
         for (int m = 0; m < matrix->row_size[n]; m++) {
             matrix->values[n][m] = n + (m + (g_matrix_m - matrix->row_size[n]));
         }
@@ -85,21 +81,48 @@ matrix_t* matrix(int is_triangular)
 
 matrix_t* init_matrix()
 {
+    /* Make a normal, non-triangular matrix */
     return matrix(0);
 }
 
 
 matrix_t* init_matrix_triangular()
 {
+    /* Make a triangular matrix */
     return matrix(1);
 }
+
+void print_matrix(matrix_t* matrix)
+{
+    for (int n = 0; n < g_matrix_n; n++) {
+        for (int m = 0; m < matrix->row_size[n]; m++) {
+            printf("%d ", matrix->values[n][m]);
+            if (matrix->values[n][m] < 10) {
+                printf("    ");
+            }
+            else if (matrix->values[n][m] < 100) {
+                printf("   ");
+            }
+            else if (matrix->values[n][m] < 1000) {
+                printf("  ");
+            }
+            else if (matrix->values[n][m] < 10000) {
+                printf(" ");
+            }
+
+        }
+        printf("\n");
+    }
+    return;
+
+}
+
 
 int main(int argc, char* argv[])
 {
 
     /* We allow only square matrices */
     g_matrix_n = g_matrix_m = atoi(argv[1]);
-    g_schedule = argv[3];
     g_num_threads = atoi(argv[2]);
 
     matrix_t* matrix;
@@ -115,6 +138,9 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
+    print_matrix(matrix);
+
+    /* Free this stupid shit */
     for (int i = 0; i < g_matrix_n; i++) {
         free(matrix->values[i]);
     }
