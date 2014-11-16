@@ -129,8 +129,55 @@ program.
 
 \section{Results}
 
-\section{Discussion}
+Running the new Wave Simulation that implements OpenMP on the DAS4 machine we
+found some minor differences in the time the simulation takes to complete.
+Running it with only one thread, a clear difference can be seen between the
+OpenMP implementation and the pthread implementation, especially when using
+static scheduling. When using dynamic or guided scheduling we see a less
+significant difference running it with a single thread, but a more difference
+when running with more than one thread.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{static}
+    \caption{Speed-up factor of using OpenMP static scheduling compared to the
+    same amount of threads and amplitude points using the pthread approach. Runs
+    a total of 10000 time steps over different amounts of amplitude points.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{dynamic}
+    \caption{Speed-up factor of using OpenMP dynamic scheduling compared to the
+    same amount of threads and amplitude points using the pthread approach. Runs
+    a total of 10000 time steps over different amounts of amplitude points.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{guided}
+    \caption{Speed-up factor of using OpenMP guided scheduling compared to the
+    same amount of threads and amplitude points using the pthread approach. Runs
+    a total of 10000 time steps over different amounts of amplitude points.}
+\end{figure}
+
+\section{Discussion}
+A clear speed-up is seen when comparing the pthread program run with a single
+thread to the OpenMP version. This can be explained by the overhead created in
+the pthread program from synchronising and mutex locking (which in the case of 1
+thread does not even need to be done). OpenMP seemingly does not create all this
+overhead when running with a single thread, because it is not needed.\\
+In addition to this quite irrelevant speed-up that only occurs when running with
+one thread, a slight decrease of the runtime is also evident when running ten
+million points on eight cores. This indicates that OpenMP is more efficient at
+writing concurrent code than we were when we made the last assignment, which is
+not very hard to believe. \\
+The differences between the dynamic, guided and static scheduling modes of
+OpenMP can be explained by their complexity. Dynamic and guided scheduling are
+in theory better than static, but the static version outperforms them both when
+running with a single thread. This is most likely due to the more complex nature
+of guided and dynamic scheduling, which creates a little more overhead and does
+not yield any speed-up when using only one thread.
 
 
 % =================================== REFERENCES ===================================
