@@ -47,8 +47,6 @@ double reduce2(double (fun)(double, double),
     while (vec_len > 1) {
 
         calc_vec_len = pow(2, floor(log2(vec_len)));
-        fprintf(stderr, "calc_vec_len: %d", calc_vec_len);
-        calc_vec = vec;
 
         /* Current vector with the length == 2^n */
         while (calc_vec_len > 1) {
@@ -56,7 +54,7 @@ double reduce2(double (fun)(double, double),
             /* halveer telkens de lengte van huidige vector door functie
              * toe te passen op alle tweetallen */
             for (int i = 0; i < calc_vec_len; i+=2) {
-                calc_vec[i] = fun(calc_vec[(i*2)], calc_vec[(i*2)]);
+                calc_vec[i] = fun(vec[(i*2)], vec[(i*2)+1]);
             }
             calc_vec_len = calc_vec_len / 2;
         }
@@ -105,7 +103,7 @@ int main(int argc, char *argv[])
     }
 
     if (vec_size < 10) {
-        printf("argument error: num_threads should be >=1.\n");
+        printf("argument error: vec_size should be >=10.\n");
         return EXIT_FAILURE;
     }
 
