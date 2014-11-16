@@ -145,7 +145,7 @@ int main(int argc, char* argv[])
     }
 
     time = timer_end();
-    printf("%d, %d, %lf", g_matrix_n, g_num_threads, time);
+    printf("%d, %d, %lf\n", g_matrix_n, g_num_threads, time);
 
     /* print_matrix(matrix); */
 
