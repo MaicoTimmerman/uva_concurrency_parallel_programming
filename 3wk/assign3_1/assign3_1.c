@@ -92,11 +92,14 @@ int main(int argc, char *argv[])
     int num_tasks;
     int my_rank;
 
+    printf("Starting INIT");
+
     rc = MPI_Init (NULL, NULL); // Initialize MPI runtime
     if (rc != MPI_SUCCESS) { // Check for success
         fprintf(stderr, "Unable to set up MPI");
         MPI_Abort(MPI_COMM_WORLD, rc); // Abort MPI runtime
     }
+    printf("finished INIT");
 
     if (my_rank == 0) {
         timer_start();
@@ -104,6 +107,8 @@ int main(int argc, char *argv[])
 
     MPI_Comm_size(MPI_COMM_WORLD, &num_tasks);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+
+    printf("I'm no. %d of %d.", my_rank, num_tasks);
 
     /* Allocate and initialize buffers. */
     old = malloc(i_max * sizeof(double));
