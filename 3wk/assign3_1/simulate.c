@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <openmpi/mpi.h>
 
 #include "simulate.h"
 
@@ -34,6 +35,14 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     /*
      * Your implementation should go here.
      */
+    int rc;
+    int num_tasks;
+    int my_rank;
+    rc = MPI_Init (NULL, NULL); // Initialize MPI runtime
+    if (rc != MPI_SUCCESS) { // Check for success
+        fprintf(stderr, "Unable to set up MPI");
+        MPI_Abort(MPI_COMM_WORLD, rc); // Abort MPI runtime
+    }
 
     /* You should return a pointer to the array with the final results. */
     return current_array;

@@ -39,12 +39,13 @@ void file_read_double_array(const char *filename, double *array, int n)
  * Saves an array with n items to a given file, overwriting any previous
  * contents.
  */
-void file_write_double_array(const char *filename, double *array, int n)
+void file_write_double_array(const char *filename,
+        double *array, int n, char *mode)
 {
     FILE *fp;
     int i;
 
-    fp = fopen(filename, "w");
+    fp = fopen(filename, mode);
 
     if (!fp) {
         fprintf(stderr, "Failed to open file %s: %s\n", filename,

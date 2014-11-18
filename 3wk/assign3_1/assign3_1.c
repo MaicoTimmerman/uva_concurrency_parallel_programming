@@ -8,10 +8,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <openmpi/mpi.h>
 
 #include "file.h"
 #include "timer.h"
 #include "simulate.h"
+
+#define MSG_DONE 2
+#define MSG_WRITE 41
+
 
 typedef double (*func_t)(double x);
 
@@ -83,6 +88,23 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
+    int rc;
+    int num_tasks;
+    int my_rank;
+
+    rc = MPI_Init (NULL, NULL); // Initialize MPI runtime
+    if (rc != MPI_SUCCESS) { // Check for success
+        fprintf(stderr, "Unable to set up MPI");
+        MPI_Abort(MPI_COMM_WORLD, rc); // Abort MPI runtime
+    }
+
+    if (my_rank == 0) {
+        timer_start();
+    }
+
+    MPI_Comm_size(MPI_COMM_WORLD, &num_tasks);
+    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+
     /* Allocate and initialize buffers. */
     old = malloc(i_max * sizeof(double));
     current = malloc(i_max * sizeof(double));
@@ -99,7 +121,7 @@ int main(int argc, char *argv[])
 
     /* How should we will our first two generations? This is determined by the
      * optional further commandline arguments.
-     * */
+     */
     if (argc > 3) {
         if (strcmp(argv[3], "sin") == 0) {
             fill(old, 1, i_max/4, 0, 2*3.14, sin);
@@ -127,16 +149,46 @@ int main(int argc, char *argv[])
         fill(current, 2, i_max/4, 0, 2*3.14, sin);
     }
 
-    timer_start();
 
     /* Call the actual simulation that should be implemented in simulate.c. */
-    ret = simulate(i_max, t_max, old, current, next);
+    /* ret = simulate(i_max, t_max, old, current, next); */
+    printf("I'm calculating %d to %d", i_max * my_rank, i_max * (my_rank+1));
 
-    time = timer_end();
-    printf("Took %g seconds\n", time);
-    printf("Normalized: %g seconds\n", time / (1. * i_max * t_max));
+    /* If not controlling process, send message that calculation is done  */
+    if (my_rank) {
+        MPI_Send(NULL, 0, MPI_BYTE, 0, MSG_DONE, MPI_COMM_WORLD );
+    }
+    if (!my_rank) {
+        for (int i = 0; i < num_tasks; i++) {
+            MPI_Recv(NULL, 0, MPI_BYTE, i, MSG_DONE, MPI_COMM_WORLD, NULL);
+        }
+        time = timer_end();
+        printf("Took %g seconds\n", time);
+        printf("Normalized: %g seconds\n", time / (1. * i_max * t_max));
+    }
 
-    file_write_double_array("result.txt", ret, i_max);
+    /* If this is the control process, write to the result text document first */
+    if (!my_rank) {
+        file_write_double_array("result.txt", ret, i_max, "w");
+        MPI_Send(NULL, 0, MPI_BYTE, 1, MSG_WRITE, MPI_COMM_WORLD );
+    }
+
+    /* After receiving a go for writing, write,
+     * then tell the next process to go. */
+    MPI_Recv(NULL, 0, MPI_BYTE, ((my_rank-1) % num_tasks),
+            MSG_WRITE, MPI_COMM_WORLD, NULL);
+
+
+    /* Tell next process to write, if this was the last process
+     * tell the remaining processes that writing is done */
+    if (my_rank) {
+        /* Write in append mode */
+        file_write_double_array("result.txt", ret, i_max, "a+");
+        MPI_Send(NULL, 0, MPI_BYTE, ((my_rank+1) % num_tasks),
+                MSG_WRITE, MPI_COMM_WORLD );
+    }
+
+    MPI_Finalize();
 
     free(old);
     free(current);
