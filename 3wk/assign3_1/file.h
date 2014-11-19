@@ -7,5 +7,5 @@
 
 #pragma once
 
-void file_read_double_array(const char *filename, double *array, int n);
-void file_write_double_array(const char *filename, double *array, int n, char *mode);
+void file_read_double_array(char *filename, double *array, int n);
+void file_write_double_array(char *filename, double *array, int n, char *mode);

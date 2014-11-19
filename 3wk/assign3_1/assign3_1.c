@@ -55,7 +55,8 @@ int main(int argc, char *argv[])
     int rc;
     int num_tasks;
     int my_rank;
-    double *old, *current, *next, *ret;
+    double *old, *current, *next;
+           /* *ret; */
     int t_max, i_max;
     double time;
 
@@ -163,26 +164,30 @@ int main(int argc, char *argv[])
         printf("Normalized: %g seconds\n", time / (1. * i_max * t_max));
     }
 
-    /* If this is the control process, write to the result text document first */
-    if (!my_rank) {
-        file_write_double_array("result.txt", ret, i_max, "w");
-        MPI_Isend(NULL, 0, MPI_BYTE, 1, MSG_WRITE, MPI_COMM_WORLD, NULL);
-    }
+    double ret[] = {1.6,2.4};
 
-    /* After receiving a go for writing, write,
-     * then tell the next process to go. */
-    MPI_Recv(NULL, 0, MPI_BYTE, ((my_rank-1) % num_tasks),
-            MSG_WRITE, MPI_COMM_WORLD, NULL);
+    file_write_double_array("./result.txt", ret, 2, "w");
 
-
-    /* Tell next process to write, if this was the last process
-     * tell the remaining processes that writing is done */
-    if (my_rank) {
-        /* Write in append mode */
-        file_write_double_array("result.txt", ret, i_max, "a+");
-        MPI_Isend(NULL, 0, MPI_BYTE, ((my_rank+1) % num_tasks),
-                MSG_WRITE, MPI_COMM_WORLD, NULL);
-    }
+    /* #<{(| If this is the control process, write to the result text document first |)}># */
+    /* if (!my_rank) { */
+    /*     file_write_double_array("result.txt", ret, i_max, "w"); */
+    /*     MPI_Isend(NULL, 0, MPI_BYTE, 1, MSG_WRITE, MPI_COMM_WORLD, NULL); */
+    /* } */
+    /*  */
+    /* #<{(| After receiving a go for writing, write, */
+    /*  * then tell the next process to go. |)}># */
+    /* MPI_Recv(NULL, 0, MPI_BYTE, ((my_rank-1) % num_tasks), */
+    /*         MSG_WRITE, MPI_COMM_WORLD, NULL); */
+    /*  */
+    /*  */
+    /* #<{(| Tell next process to write, if this was the last process */
+    /*  * tell the remaining processes that writing is done |)}># */
+    /* if (my_rank) { */
+    /*     #<{(| Write in append mode |)}># */
+    /*     file_write_double_array("result.txt", ret, i_max, "a+"); */
+    /*     MPI_Isend(NULL, 0, MPI_BYTE, ((my_rank+1) % num_tasks), */
+    /*             MSG_WRITE, MPI_COMM_WORLD, NULL); */
+    /* } */
 
     fprintf(stderr, "Finalizing\n");
     MPI_Finalize();

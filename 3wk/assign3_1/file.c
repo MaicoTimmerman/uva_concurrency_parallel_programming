@@ -15,7 +15,7 @@
 /*
  * Reads at most n doubles from a given file into an array.
  */
-void file_read_double_array(const char *filename, double *array, int n)
+void file_read_double_array(char *filename, double *array, int n)
 {
     FILE *fp;
     int i;
@@ -41,7 +41,7 @@ void file_read_double_array(const char *filename, double *array, int n)
  * Saves an array with n items to a given file, overwriting any previous
  * contents.
  */
-void file_write_double_array(const char *filename,
+void file_write_double_array(char *filename,
         double *array, int n, char *mode)
 {
     MPI_File fh;
@@ -54,11 +54,9 @@ void file_write_double_array(const char *filename,
         MPI_Abort(MPI_COMM_WORLD, -1);
     }
 
-    for (int i = 0; i < n; i++) {
-        /* fprintf(fp, "%f\n", array[i]); */
-        MPI_File_write_ordered(fh, array, n, MPI_DOUBLE, NULL);
-    }
+    MPI_File_write_ordered(fh, array, n, MPI_DOUBLE, NULL);
+    /* for (int i = 0; i < n; i++) { */
+    /*     fprintf(fp, "%f\n", array[i]); */
+    /* } */
+    MPI_File_close(&fh);
 }
-
-
-
