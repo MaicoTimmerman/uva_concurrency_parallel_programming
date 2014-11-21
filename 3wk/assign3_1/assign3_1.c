@@ -9,12 +9,13 @@
 #include <string.h>
 #include <math.h>
 
-#include "mpi.h"
+#include <openmpi/mpi.h>
+/* #include "mpi.h" */
 #include "file.h"
 #include "timer.h"
 #include "simulate.h"
 
-#define MSG_WRITE 41
+#define MSG_WRITE 42
 
 
 typedef double (*func_t)(double x);
@@ -55,8 +56,7 @@ int main(int argc, char *argv[])
     int rc;
     int num_tasks;
     int my_rank;
-    double *old, *current, *next;
-           /* *ret; */
+    double *old, *current, *next, *ret;
     int t_max, i_max;
     double time;
 
@@ -65,7 +65,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Unable to set up MPI\n");
         MPI_Abort(MPI_COMM_WORLD, rc); // Abort MPI runtime
     }
-    fprintf(stderr, "finished INIT\n");
 
     /* Parse commandline args */
     if (argc < 3) {
@@ -102,10 +101,13 @@ int main(int argc, char *argv[])
         timer_start();
     }
 
+    /* Get MPI rankings */
     MPI_Comm_size(MPI_COMM_WORLD, &num_tasks);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
-    fprintf(stderr, "I'm no. %d of %d.\n", my_rank, num_tasks);
+    /* Scale i_max to the number of threads
+     * with halo cells in mind(left and right) */
+    i_max = (i_max/num_tasks) + 2;
 
     /* Allocate and initialize buffers. */
     old = malloc(i_max * sizeof(double));
@@ -154,7 +156,7 @@ int main(int argc, char *argv[])
 
     /* Call the actual simulation that should be implemented in simulate.c. */
     /* ret = simulate(i_max, t_max, old, current, next); */
-    fprintf(stderr, "I'm calculating %d to %d\n", i_max * my_rank, i_max * (my_rank+1));
+    ret = current;
 
     /* If not controlling process, send message that calculation is done  */
     MPI_Barrier(MPI_COMM_WORLD);
@@ -162,39 +164,30 @@ int main(int argc, char *argv[])
         time = timer_end();
         printf("Took %g seconds\n", time);
         printf("Normalized: %g seconds\n", time / (1. * i_max * t_max));
+
+        /* Write own data */
+        file_write_double_array("result.txt", ret+1, i_max-1, "w");
+
+        /* Receive the data from all the other users */
+        for (int i = 1; i < num_tasks; i++) {
+            MPI_Recv(ret, i_max, MPI_DOUBLE, i, MSG_WRITE, MPI_COMM_WORLD, NULL);
+            file_write_double_array("result.txt", ret+1, i_max-1, "a+");
+        }
     }
 
-    double ret[] = {1.6,2.4};
+    /* Non-Controller */
+    if (my_rank) {
+        /* Send to controller */
+        MPI_Send(ret, i_max, MPI_DOUBLE, 0, MSG_WRITE, MPI_COMM_WORLD);
+    }
 
-    file_write_double_array("./result.txt", ret, 2, "w");
-
-    /* #<{(| If this is the control process, write to the result text document first |)}># */
-    /* if (!my_rank) { */
-    /*     file_write_double_array("result.txt", ret, i_max, "w"); */
-    /*     MPI_Isend(NULL, 0, MPI_BYTE, 1, MSG_WRITE, MPI_COMM_WORLD, NULL); */
-    /* } */
-    /*  */
-    /* #<{(| After receiving a go for writing, write, */
-    /*  * then tell the next process to go. |)}># */
-    /* MPI_Recv(NULL, 0, MPI_BYTE, ((my_rank-1) % num_tasks), */
-    /*         MSG_WRITE, MPI_COMM_WORLD, NULL); */
-    /*  */
-    /*  */
-    /* #<{(| Tell next process to write, if this was the last process */
-    /*  * tell the remaining processes that writing is done |)}># */
-    /* if (my_rank) { */
-    /*     #<{(| Write in append mode |)}># */
-    /*     file_write_double_array("result.txt", ret, i_max, "a+"); */
-    /*     MPI_Isend(NULL, 0, MPI_BYTE, ((my_rank+1) % num_tasks), */
-    /*             MSG_WRITE, MPI_COMM_WORLD, NULL); */
-    /* } */
-
-    fprintf(stderr, "Finalizing\n");
     MPI_Finalize();
+    fprintf(stderr, "Finalized\n");
 
     free(old);
     free(current);
     free(next);
 
+    fprintf(stderr, "Done\n");
     return EXIT_SUCCESS;
 }
