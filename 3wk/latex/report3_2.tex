@@ -159,7 +159,11 @@ of nodes is not a multiple of 2. For this reason the destination node is checked
 to be smaller than the number of threads, so no invalid messages will be send.
 
 \section{Discussion}
-
+We are quite pleased with our solution, managing to maintain a complexity of
+just $O(log(n))$ which means our program should run relatively fast even when
+scaled to a much larger problem size. It did prove tricky to work out some of
+the issues we had, for instance determining the destination nodes' ranks needed
+some thought before we were able to come up with a solid way of doing this.
 
 % =================================== REFERENCES ===================================
 
