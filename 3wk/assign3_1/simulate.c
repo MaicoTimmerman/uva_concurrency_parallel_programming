@@ -38,15 +38,16 @@ double *simulate(const int i_max, const int t_max, double *old, double *cur,
 
     fprintf(stderr, "%d: sending to: %d (1)\n", task_id,
             ((((task_id -1) % num_tasks) + num_tasks) % num_tasks));
+
     /* send(left_neighbour, old[0]) */
     MPI_Isend(&(old[1]), 1, MPI_DOUBLE,
             ((((task_id -1) % num_tasks) + num_tasks) % num_tasks),
             0, MPI_COMM_WORLD, NULL);
 
-    fprintf(stderr, "%d: sending to: %d (2)\n", task_id, (task_id +1) % num_tasks);
+    fprintf(stderr, "%d: sending to: %d (2)\n", task_id, ((((task_id + 1) % num_tasks) + num_tasks) % num_tasks));
     /* send(right_neighbour, old[local_size]) */
     MPI_Isend(&(old[i_max - 1]), 1, MPI_DOUBLE,
-            ((((task_id -1) % num_tasks) + num_tasks) % num_tasks),
+            ((((task_id + 1) % num_tasks) + num_tasks) % num_tasks),
             0, MPI_COMM_WORLD, NULL);
 
     /* recv(left_neighbour, old[0]) */
