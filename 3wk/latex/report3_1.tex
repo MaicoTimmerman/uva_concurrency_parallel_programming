@@ -112,11 +112,11 @@
 \section{Introduction}
 
 In this assignment we yet again take a look at the wave equation simulation
-program. This time it will be parallelised using MPI. This means that message
-passing has to be used to communicate between different instances of the program
-instead of just being able to write to the same memory space, because each node
-has its own memory and accessing another node's memory is relatively slow. So
-the transfer of data is kept to a minimum, and we will use messages to
+program. This time it will be parallelized using OpenMPI. This means that
+message passing has to be used to communicate between different instances of the
+program instead of just being able to write to the same memory space, because
+each node has its own memory and accessing another node's memory is relatively
+slow. So the transfer of data is kept to a minimum, and we will use messages to
 synchronise and exchange small quantities of data.
 
 \section{Method}
