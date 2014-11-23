@@ -35,29 +35,42 @@ double *simulate(const int i_max, const int t_max, double *old, double *cur,
 
     fprintf(stderr, "%d: num_tasks: %d\n", task_id, num_tasks);
 
+
+    fprintf(stderr, "%d: sending to: %d (1)\n", task_id,
+            ((((task_id -1) % num_tasks) + num_tasks) % num_tasks));
     /* send(left_neighbour, old[0]) */
-    MPI_Isend(&(old[1]), 1, MPI_DOUBLE, (task_id - 1) % num_tasks,
+    MPI_Isend(&(old[1]), 1, MPI_DOUBLE,
+            ((((task_id -1) % num_tasks) + num_tasks) % num_tasks),
             0, MPI_COMM_WORLD, NULL);
+
+    fprintf(stderr, "%d: sending to: %d (2)\n", task_id, (task_id +1) % num_tasks);
     /* send(right_neighbour, old[local_size]) */
-    MPI_Isend(&(old[i_max - 1]), 1, MPI_DOUBLE, (task_id + 1) % num_tasks,
+    MPI_Isend(&(old[i_max - 1]), 1, MPI_DOUBLE,
+            ((((task_id -1) % num_tasks) + num_tasks) % num_tasks),
             0, MPI_COMM_WORLD, NULL);
 
     /* recv(left_neighbour, old[0]) */
-    MPI_Recv(&(old[0]), 1, MPI_DOUBLE, (task_id - 1) % num_tasks,
+    MPI_Recv(&(old[0]), 1, MPI_DOUBLE,
+            ((((task_id -1) % num_tasks) + num_tasks) % num_tasks),
             0, MPI_COMM_WORLD, NULL);
     /* recv(right_neighbour, old[local_size]) */
-    MPI_Recv(&(old[i_max]), 1, MPI_DOUBLE, (task_id + 1) % num_tasks,
+    MPI_Recv(&(old[i_max]), 1, MPI_DOUBLE,
+            ((((task_id + 1) % num_tasks) + num_tasks) % num_tasks),
             0, MPI_COMM_WORLD, NULL);
 
     /* Wait for all the sync the initial layer */
     MPI_Barrier(MPI_COMM_WORLD);
 
     /* send(left_neighbour, cur[0]) */
-    MPI_Isend(&(cur[1]), 1, MPI_DOUBLE, (task_id - 1) % num_tasks,
+    MPI_Isend(&(cur[1]), 1, MPI_DOUBLE,
+            ((((task_id -1) % num_tasks) + num_tasks) % num_tasks),
             0, MPI_COMM_WORLD, NULL);
     /* send(right_neighbour, cur[local_size]) */
-    MPI_Isend(&(cur[i_max - 1]), 1, MPI_DOUBLE, (task_id + 1) % num_tasks,
+    MPI_Isend(&(cur[i_max - 1]), 1, MPI_DOUBLE,
+            ((((task_id + 1) % num_tasks) + num_tasks) % num_tasks),
             0, MPI_COMM_WORLD, NULL);
+
+    fprintf(stderr, "done preparation\n");
 
     int i = 0;
     for (; i < t_max; i++) {
