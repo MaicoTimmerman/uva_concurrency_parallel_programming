@@ -6,8 +6,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <openmpi/mpi.h>
 
 #include "simulate.h"
+/* #include "mpi.h" */
 
 
 /* Add any global variables you may need. */
@@ -28,28 +30,65 @@
  * next_array: array of size i_max. You should fill this with t+1
  */
 double *simulate(const int i_max, const int t_max, double *old, double *cur,
-        double *next, const int num_taks, const int task_id)
+        double *next, const int num_tasks, const int task_id)
 {
 
-    /*
-     * Your implementation should go here.
-     */
-    /*  send(left_neighbour, cur[1]) ; */
-    MPI_Send(old[0], 1, MPI_DOUBLE, 0, MSG_WRITE, MPI_COMM_WORLD);
-    MPI_Send(cur[0], 1, MPI_DOUBLE, 0, MSG_WRITE, MPI_COMM_WORLD);
-    /* send(right_neighbour, cur[local_size]) ; */
-    for (int i = 0; i < t_max; i++) {
-        for (int i = 0; i < i_max; i++) {
-            next[i] = (2*cur[i]) - old[i] + (0.15*(cur[i-1] - (2*cur[i] - cur[i+1])));
+    /* send(left_neighbour, old[0]) */
+    MPI_Isend(&(old[1]), 1, MPI_DOUBLE, (task_id - 1) % num_tasks,
+            0, MPI_COMM_WORLD, NULL);
+    /* send(right_neighbour, old[local_size]) */
+    MPI_Isend(&(old[i_max - 1]), 1, MPI_DOUBLE, (task_id + 1) % num_tasks,
+            0, MPI_COMM_WORLD, NULL);
+
+    /* recv(left_neighbour, old[0]) */
+    MPI_Recv(&(old[0]), 1, MPI_DOUBLE, (task_id - 1) % num_tasks,
+            0, MPI_COMM_WORLD, NULL);
+    /* recv(right_neighbour, old[local_size]) */
+    MPI_Recv(&(old[i_max]), 1, MPI_DOUBLE, (task_id + 1) % num_tasks,
+            0, MPI_COMM_WORLD, NULL);
+
+    /* Wait for all the sync the initial layer */
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    /* send(left_neighbour, old[0]) */
+    MPI_Isend(&(cur[1]), 1, MPI_DOUBLE, (task_id - 1) % num_tasks,
+            0, MPI_COMM_WORLD, NULL);
+    /* send(right_neighbour, old[local_size]) */
+    MPI_Isend(&(cur[i_max - 1]), 1, MPI_DOUBLE, (task_id + 1) % num_tasks,
+            0, MPI_COMM_WORLD, NULL);
+
+    int i = 0;
+    for (; i < t_max; i++) {
+        for (int j = 2; i < i_max - 2; i++) {
+            next[j] = (2*cur[j]) - old[j] + (0.15*(cur[j-1] - (2*cur[j] - cur[j+1])));
         }
-        /* cur[local_size + 1] = receive(right_neighbour); */
-        /* new[local_size ] = ...; */
+        /* cur[local_size] = receive(right_neighbour); */
+        MPI_Recv(&(cur[i_max]), 1, MPI_DOUBLE, (task_id + 1) % num_tasks,
+                i, MPI_COMM_WORLD, NULL);
+
+        /* new[local_size-1] = ...; */
+        next[i_max - 1] = (2*cur[i_max-1]) - old[i_max-1] +
+            (0.15*(cur[i_max-1-1] - (2*cur[i_max-1] - cur[i_max-1+1])));
+
         /* send(right_neighbour , new [local_size]); */
-        /* cur[0] = receive(left_neighbour); */
+        MPI_Isend(&(next[i_max - 1]), 1, MPI_DOUBLE, (task_id + 1) % num_tasks,
+                i+1, MPI_COMM_WORLD, NULL);
+
+        /* cur[0] = receive(left_neighbour) */
+        MPI_Recv(&(cur[0]), 1, MPI_DOUBLE, (task_id - 1) % num_tasks,
+                i, MPI_COMM_WORLD, NULL);
+
         /* new[1] = ...; */
+        next[1] = (2*cur[1]) - old[1] + (0.15*(cur[0] - (2*cur[1] - cur[2])));
+
         /* send(left_neighbour , new [1]); */
-        /* old = cur; */
-        /* cur = new; */
+        MPI_Isend(&(next[i_max - 1]), 1, MPI_DOUBLE, (task_id - 1) % num_tasks,
+                i+1, MPI_COMM_WORLD, NULL);
+
+        old = cur;
+        cur = next;
+        next = old;
+
     }
     /* discard = receive ( left_neighbour ) ; */
     /* discard = receive ( right_neighbour ) ; */

@@ -39,7 +39,7 @@ double gauss(double x)
  * `sample_end'.
  */
 void fill(double *array, int offset, int range, double sample_start,
-        double sample_end, func_t f)
+        double sample_end, int num_task, int task_id, func_t f)
 {
     int i;
     float dx;
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 {
     int rc;
     int num_tasks;
-    int my_rank;
+    int task_id;
     double *old, *current, *next, *ret;
     int t_max, i_max;
     double time;
@@ -97,13 +97,13 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    if (my_rank == 0) {
+    if (task_id == 0) {
         timer_start();
     }
 
     /* Get MPI rankings */
     MPI_Comm_size(MPI_COMM_WORLD, &num_tasks);
-    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+    MPI_Comm_rank(MPI_COMM_WORLD, &task_id);
 
     /* Scale i_max to the number of threads
      * with halo cells in mind(left and right) */
@@ -128,14 +128,14 @@ int main(int argc, char *argv[])
      */
     if (argc > 3) {
         if (strcmp(argv[3], "sin") == 0) {
-            fill(old, 1, i_max/4, 0, 2*3.14, sin);
-            fill(current, 2, i_max/4, 0, 2*3.14, sin);
+            fill(old, 1, i_max/4, 0, 2*3.14, num_tasks, task_id, sin);
+            fill(current, 2, i_max/4, 0, 2*3.14, num_tasks, task_id, sin);
         } else if (strcmp(argv[3], "sinfull") == 0) {
-            fill(old, 1, i_max-2, 0, 10*3.14, sin);
-            fill(current, 2, i_max-3, 0, 10*3.14, sin);
+            fill(old, 1, i_max-2, 0, 10*3.14, num_tasks, task_id, sin);
+            fill(current, 2, i_max-3, 0, 10*3.14, num_tasks, task_id, sin);
         } else if (strcmp(argv[3], "gauss") == 0) {
-            fill(old, 1, i_max/4, -3, 3, gauss);
-            fill(current, 2, i_max/4, -3, 3, gauss);
+            fill(old, 1, i_max/4, -3, 3, num_tasks, task_id, gauss);
+            fill(current, 2, i_max/4, -3, 3, num_tasks, task_id, gauss);
         } else if (strcmp(argv[3], "file") == 0) {
             if (argc < 6) {
                 printf("No files specified!\n");
@@ -149,18 +149,17 @@ int main(int argc, char *argv[])
         }
     } else {
         /* Default to sinus. */
-        fill(old, 1, i_max/4, 0, 2*3.14, sin);
-        fill(current, 2, i_max/4, 0, 2*3.14, sin);
+        fill(old, 1, i_max/4, 0, 2*3.14, num_tasks, task_id, sin);
+        fill(current, 2, i_max/4, 0, 2*3.14, num_tasks, task_id, sin);
     }
 
 
     /* Call the actual simulation that should be implemented in simulate.c. */
-    /* ret = simulate(i_max, t_max, old, current, next); */
-    ret = current;
+    ret = simulate(i_max, t_max, old, current, next, num_tasks, task_id);
 
     /* If not controlling process, send message that calculation is done  */
     MPI_Barrier(MPI_COMM_WORLD);
-    if (!my_rank) {
+    if (!task_id) {
         time = timer_end();
         printf("Took %g seconds\n", time);
         printf("Normalized: %g seconds\n", time / (1. * i_max * t_max));
@@ -176,7 +175,7 @@ int main(int argc, char *argv[])
     }
 
     /* Non-Controller */
-    if (my_rank) {
+    if (task_id) {
         /* Send to controller */
         MPI_Send(ret, i_max, MPI_DOUBLE, 0, MSG_WRITE, MPI_COMM_WORLD);
     }
