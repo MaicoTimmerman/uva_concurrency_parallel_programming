@@ -1,0 +1,145 @@
+\documentclass[a4paper,12px]{article}
+
+\usepackage{graphicx}
+\usepackage[english]{babel}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{xifthen}
+\usepackage[linesnumberedhidden, titlenotnumbered]{algorithm2e}
+\usepackage{lipsum}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{tabularx}
+
+\usepackage{minted}
+\usepackage{caption}
+\usepackage{amssymb}
+
+\pagestyle{fancy}
+\lhead{\includegraphics[width=7cm]{logoUvA}}
+\rhead{\footnotesize \textsc {Report\\ \opdracht}}
+\lfoot
+{
+    \footnotesize \studentA
+    \ifthenelse{\isundefined{\studentB}}{}{\\ \studentB}
+    \ifthenelse{\isundefined{\studentC}}{}{\\ \studentC}
+    \ifthenelse{\isundefined{\studentD}}{}{\\ \studentD}
+    \ifthenelse{\isundefined{\studentE}}{}{\\ \studentE}
+}
+\cfoot{}
+\rfoot{\small \textsc {Page \thepage\ of \pageref{LastPage}}}
+\renewcommand{\footrulewidth}{0.5pt}
+
+\fancypagestyle{firststyle}
+{
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \chead{\includegraphics[width=7cm]{logoUvA}}
+    \rfoot{\small \textsc {Page \thepage\ of \pageref{LastPage}}}
+}
+
+\setlength{\topmargin}{-0.3in}
+\setlength{\textheight}{630pt}
+\setlength{\headsep}{40pt}
+
+% =================================== DOC INFO ===================================
+
+\newcommand{\titel}{MPI}
+\newcommand{\opdracht}{Assignment 3.1: Wave}
+\newcommand{\docent}{Dr. C. Grelck}
+\newcommand{\cursus}{Concurrency and Parallel Programming}
+\newcommand{\vakcode}{5062COPP6Y}
+\newcommand{\datum}{\today}
+\newcommand{\studentA}{Robin Klusman}
+\newcommand{\uvanetidA}{10675671}
+\newcommand{\studentB}{Maico Timmerman}
+\newcommand{\uvanetidB}{10542590}
+%\newcommand{\studentC}{Boudewijn Braams}
+\newcommand{\uvanetidC}{10401040}
+%\newcommand{\studentD}{Govert Verkes}
+\newcommand{\uvanetidD}{10211748}
+%\newcommand{\studentE}{Naam student 5}
+\newcommand{\uvanetidE}{UvAnetID student 5}
+
+% ===================================  ===================================
+
+\begin{document}
+\thispagestyle{firststyle}
+\begin{center}
+    \textsc{\Large \opdracht}\\[0.2cm]
+    \rule{\linewidth}{0.5pt} \\[0.4cm]
+    {\huge \bfseries \titel}
+    \rule{\linewidth}{0.5pt} \\[0.2cm]
+    {\large \datum  \\[0.4cm]}
+
+    \begin{minipage}{0.4\textwidth}
+        \begin{flushleft}
+            \emph{Student:}\\
+            {\studentA \\ {\small \uvanetidA \\[0.2cm]}}
+            \ifthenelse{\isundefined{\studentB}}{}{\studentB \\ {\small \uvanetidB \\[0.2cm]}}
+            \ifthenelse{\isundefined{\studentC}}{}{\studentC \\ {\small \uvanetidC \\[0.2cm]}}
+            \ifthenelse{\isundefined{\studentD}}{}{\studentD \\ {\small \uvanetidD \\[0.2cm]}}
+            \ifthenelse{\isundefined{\studentE}}{}{\studentE \\ {\small \uvanetidE \\ [0.2cm]}}
+        \end{flushleft}
+    \end{minipage}
+    ~
+    \begin{minipage}{0.4\textwidth}
+        \begin{flushright}
+            \emph{Supervisor:} \\
+            \docent \\[0.2cm]
+            \emph{Course:} \\
+            \cursus \\[0.2cm]
+            \emph{Course code:} \\
+            \vakcode \\[0.2cm]
+        \end{flushright}
+    \end{minipage}\\[1 cm]
+\end{center}
+
+
+% =================================== FRONT PAGE ===================================
+
+\vspace{2cm}
+\begin{center}
+    \includegraphics[width=(\textwidth/5*3)]{parallel_tasks}
+\end{center}
+\clearpage
+
+\tableofcontents
+\vspace{5mm}
+
+% =================================== MAIN TEXT ===================================
+
+\section{Introduction}
+
+In this assignment we yet again take a look at the wave equation simulation
+program. This time it will be parallelised using MPI. This means that message
+passing has to be used to communicate between different instances of the program
+instead of just being able to write to the same memory space, because each node
+has its own memory and accessing another node's memory is relatively slow. So
+the transfer of data is kept to a minimum, and we will use messages to
+synchronise and exchange small quantities of data.
+
+\section{Method}
+
+The OpenMPI predefined functions are used to simplify the creation of this
+program. These functions define actions such as sending a message, receiving a
+message, writing to a file in a certain order, etc. Our implementation will make
+every instance compute a certain portion of the wave, and then communicate its
+edge values to its neighbours, since those neighbours need those edge values to
+compute their own edges. After a certain amount of iterations have been
+completed, all instances of the program will write to a file in the correct
+order to get the full state of the wave.
+
+\section{Results}
+
+
+\section{Discussion}
+
+
+% =================================== REFERENCES ===================================
+
+%\clearpage
+%\bibliographystyle{unsrt}
+%\bibliography{bib}
+
+\end{document}
