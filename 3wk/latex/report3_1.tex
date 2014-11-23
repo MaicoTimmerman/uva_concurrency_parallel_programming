@@ -127,13 +127,15 @@ message, writing to a file in a certain order, etc. Our implementation will make
 every instance compute a certain portion of the wave, and then communicate its
 edge values to its neighbours, since those neighbours need those edge values to
 compute their own edges. After a certain amount of iterations have been
-completed, all instances of the program will write to a file in the correct
-order to get the full state of the wave.
+completed, all instances will send their finished wave calculation to the
+controlling process, which will write the results to a file.
 
 \section{Results}
-
+Due to struggles during programming this exercise we were not able to run
+the program on the DAS4, therefor there are no results of this assignment.
 
 \section{Discussion}
+Since there are no results, a conclusion could not be made.
 
 
 % =================================== REFERENCES ===================================
