@@ -33,6 +33,8 @@ double *simulate(const int i_max, const int t_max, double *old, double *cur,
         double *next, const int num_tasks, const int task_id)
 {
 
+    fprintf(stderr, "%d: num_tasks: %d\n", task_id, num_tasks);
+
     /* send(left_neighbour, old[0]) */
     MPI_Isend(&(old[1]), 1, MPI_DOUBLE, (task_id - 1) % num_tasks,
             0, MPI_COMM_WORLD, NULL);
@@ -50,10 +52,10 @@ double *simulate(const int i_max, const int t_max, double *old, double *cur,
     /* Wait for all the sync the initial layer */
     MPI_Barrier(MPI_COMM_WORLD);
 
-    /* send(left_neighbour, old[0]) */
+    /* send(left_neighbour, cur[0]) */
     MPI_Isend(&(cur[1]), 1, MPI_DOUBLE, (task_id - 1) % num_tasks,
             0, MPI_COMM_WORLD, NULL);
-    /* send(right_neighbour, old[local_size]) */
+    /* send(right_neighbour, cur[local_size]) */
     MPI_Isend(&(cur[i_max - 1]), 1, MPI_DOUBLE, (task_id + 1) % num_tasks,
             0, MPI_COMM_WORLD, NULL);
 
@@ -66,11 +68,11 @@ double *simulate(const int i_max, const int t_max, double *old, double *cur,
         MPI_Recv(&(cur[i_max]), 1, MPI_DOUBLE, (task_id + 1) % num_tasks,
                 i, MPI_COMM_WORLD, NULL);
 
-        /* new[local_size-1] = ...; */
+        /* next[local_size-1] = ...; */
         next[i_max - 1] = (2*cur[i_max-1]) - old[i_max-1] +
             (0.15*(cur[i_max-1-1] - (2*cur[i_max-1] - cur[i_max-1+1])));
 
-        /* send(right_neighbour , new [local_size]); */
+        /* send(right_neighbour , next[local_size-1]); */
         MPI_Isend(&(next[i_max - 1]), 1, MPI_DOUBLE, (task_id + 1) % num_tasks,
                 i+1, MPI_COMM_WORLD, NULL);
 
@@ -90,8 +92,14 @@ double *simulate(const int i_max, const int t_max, double *old, double *cur,
         next = old;
 
     }
-    /* discard = receive ( left_neighbour ) ; */
-    /* discard = receive ( right_neighbour ) ; */
+
+    double discard = 42.;
+    /* discard last receive(left_neighbour); */
+    MPI_Recv(&discard, 1, MPI_DOUBLE, (task_id + 1) % num_tasks,
+                i, MPI_COMM_WORLD, NULL);
+    /* discard last receive(right_neighbour);*/
+    MPI_Recv(&discard, 1, MPI_DOUBLE, (task_id + 1) % num_tasks,
+                i, MPI_COMM_WORLD, NULL);
 
     /* You should return a pointer to the array with the final results. */
     return cur;

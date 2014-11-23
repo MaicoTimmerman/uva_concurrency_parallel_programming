@@ -45,11 +45,13 @@ int broadcast(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm
     return 0;
 }
 
-int main(int argc, int* argv[])
+int main(int argc, char* argv[])
 {
-    MPI_Init(&argc, &argv);
+
     int message = 4;
+    MPI_Init(&argc, &argv);
     broadcast(&message, 1, MPI_INT, 4, MPI_COMM_WORLD);
+    MPI_Finalize();
 
     return EXIT_SUCCESS;
 }
