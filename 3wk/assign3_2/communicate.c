@@ -37,7 +37,8 @@ int broadcast(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm
         /* Calculate which node to send to in this iteration, also translate the effective
          * rank to actual rank. */
         int dest = (((effective_rank + (int)pow(2, t)) + root) % num);
-        fprintf(stderr,"Sending message to effective: %d and actual: %d.\n", ((dest - root) % num), dest);
+        fprintf(stderr,"Sending message from effectkve: %d, actual: %d\nto effective: %d and actual: %d.\n",
+                effective_rank, rank, ((dest - root) % num), dest);
         MPI_Send(buffer, count, datatype, dest, DTAG, communicator);
 
     }
@@ -47,7 +48,7 @@ int broadcast(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm
 int main(int argc, int* argv[])
 {
     MPI_Init(&argc, &argv);
-    broadcast(10, 10, MPI_INT, 4, MPI_COMM_WORLD);
+    broadcast((void*)10, 10, MPI_INT, 4, MPI_COMM_WORLD);
 
     return EXIT_SUCCESS;
 }
