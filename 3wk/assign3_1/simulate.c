@@ -70,8 +70,6 @@ double *simulate(const int i_max, const int t_max, double *old, double *cur,
             ((((task_id + 1) % num_tasks) + num_tasks) % num_tasks),
             0, MPI_COMM_WORLD, &req_right_cur);
 
-    fprintf(stderr, "%d, Done initializing\n", task_id);
-
     int i = 0;
     for (; i < t_max; i++) {
         for (int j = 2; j < i_max - 2; j++) {
@@ -79,8 +77,6 @@ double *simulate(const int i_max, const int t_max, double *old, double *cur,
         }
         MPI_Request req_left;
         MPI_Request req_right;
-
-        fprintf(stderr, "%d, i: %d\n",task_id, i);
 
         /* cur[local_size] = receive(right_neighbour); */
         MPI_Recv(&(cur[i_max]), 1, MPI_DOUBLE,
@@ -114,17 +110,16 @@ double *simulate(const int i_max, const int t_max, double *old, double *cur,
         old = cur;
         cur = next;
         next = old;
-        fprintf(stderr, "in i: %d\n", i);
 
     }
-    fprintf(stderr, "na i: %d\n", i);
 
     double discard = 42.;
     /* discard last receive(left_neighbour); */
     MPI_Recv(&discard, 1, MPI_DOUBLE, (task_id + 1) % num_tasks,
                 i, MPI_COMM_WORLD, NULL);
+
     /* discard last receive(right_neighbour);*/
-    MPI_Recv(&discard, 1, MPI_DOUBLE, (task_id + 1) % num_tasks,
+    MPI_Recv(&discard, 1, MPI_DOUBLE, (task_id - 1) % num_tasks,
                 i, MPI_COMM_WORLD, NULL);
 
     /* You should return a pointer to the array with the final results. */
