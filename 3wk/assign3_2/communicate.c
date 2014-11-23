@@ -33,10 +33,10 @@ int broadcast(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm
 
 
     /* Start spreading the message after it has been received. Root starts immediately. */
-    for (int i = t; t < t_max; t++) {
+    for (int i = t; i < t_max; i++) {
         /* Calculate which node to send to in this iteration, also translate the effective
          * rank to actual rank. */
-        int dest = (effective_rank + (int)pow(2, t));
+        int dest = (effective_rank + (int)pow(2, i));
 
         /* Only send the message if the destination is valid. */
         if (dest < num) {
