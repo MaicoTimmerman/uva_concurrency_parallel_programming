@@ -12,28 +12,35 @@ int broadcast(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm
     int rank, num, t, t_max;
     MPI_Status status;
 
+    /* Get rank and number of nodes. */
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &num);
 
+    /* Get the effective rank, this means that we consider the root of the message as rank 0, while
+     * in fact it could be any rank.  */
     int effective_rank = ((rank - root) % num);
 
 
+    /* If not root, wait for message. */
     if (effective_rank) {
-        /* Is not root, wait for message. */
         MPI_Recv(buffer, count, datatype, MPI_ANY_SOURCE, DTAG, communicator, &status);
     }
 
-    t = (effective_rank);
-    t_max = ceil(log2(effective_rank));
+    /* Calculate the t at which a certain node enters the loop,
+     * and calculate the max amount of iterations */
+    t = ceil(log2(effective_rank));
+    t_max = ceil(log2(num));
 
 
     /* Start spreading the message after it has been received. Root starts immediately. */
     for (int i = t; t < t_max; t++) {
+        /* Calculate which node to send to in this iteration, also translate the effective
+         * rank to actual rank. */
         int dest = (((effective_rank + (int)pow(2, t)) + root) % num);
+        fprintf(stderr,"Sending message to effective: %d and actual: %d.\n", ((dest - root) % num), dest);
         MPI_Send(buffer, count, datatype, dest, DTAG, communicator);
+
     }
-
-
     return 0;
 }
 
