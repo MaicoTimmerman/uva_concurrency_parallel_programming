@@ -48,7 +48,8 @@ int broadcast(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm
 int main(int argc, int* argv[])
 {
     MPI_Init(&argc, &argv);
-    broadcast((void*)10, 10, MPI_INT, 4, MPI_COMM_WORLD);
+    int message = 4;
+    broadcast(&message, 1, MPI_INT, 4, MPI_COMM_WORLD);
 
     return EXIT_SUCCESS;
 }
