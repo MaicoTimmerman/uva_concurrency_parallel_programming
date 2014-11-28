@@ -1,0 +1,344 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+% \usepackage{url}
+\usepackage{breakurl} 
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{mathtools}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{ %
+  language=Java,        
+  basicstyle=\footnotesize,     
+  backgroundcolor=\color{white},  
+  showspaces=false,      
+  showstringspaces=false,    
+  showtabs=false,        
+  frame=single,         
+  rulecolor=\color{black},   
+  tabsize=2,          
+  captionpos=b,        
+  breaklines=true,        
+  title=\lstname,        
+  keywordstyle=\color{blue},    
+  commentstyle=\color{dkgreen},   
+  stringstyle=\color{mauve},    
+  escapeinside={\%*}{*)},     
+  morekeywords={*,...} 
+}
+
+
+
+\date{}
+
+
+\title{Hadoop Tutorial\\
+  University of Amsterdam BSc Informatica
+  Concurrency \& Parallel Programming
+}
+
+
+\begin{document}
+  \maketitle
+  
+  \tableofcontents
+  
+  \section{Overview}
+  % The goal of this tutorial is to enable you to gain experience programming with:
+  % \begin{itemize}
+  %  \item The Hadoop open source framework
+  %  \item Breaking down a task into a parallel distributed MapReduce model
+  % \end{itemize}
+  
+  
+  Hadoop MapReduce is a framework for writing applications which process large volums of data in-parallel.
+  
+  A MapReduce job usually splits an input data-set into chunks which are processed by map tasks in a parallel manner. The framework sorts the outputs of the maps, which are then input to the reduce tasks. Typically both the input and the output of the job are stored in a file-system.
+  
+  
+  \section{Hadoop Module}
+  
+  Before you do the assignment you need to familiarize yourselves with writing and executing MapReduce jobs on DAS4. This tutorial is based on the one found in \url{http://hadoop.apache.org/docs/r2.5.0/hadoop-mapreduce-client/hadoop-mapreduce-client-core/MapReduceTutorial.html}. 
+  To run the it you need to log in to fs0.das4.cs.vu.nl. That is because Hadoop is only installed on the VU cluster. To load the Hadoop module type: 
+  
+  \lstset{language=}
+  
+  \begin{lstlisting}
+    $module load hadoop/2.5.0 
+  \end{lstlisting}
+  
+  To make sure you have the correct version (2.5.0) you can type:
+  \begin{lstlisting}
+    $hadoop version
+  \end{lstlisting}
+  
+  The output should look like this: 
+  \begin{lstlisting}
+    Hadoop 2.5.0
+    Subversion http://svn.apache.org/repos/asf/hadoop/common -r 1616291
+    Compiled by jenkins on 2014-08-06T17:31Z
+    Compiled with protoc 2.5.0
+    From source with checksum 423dcd5a752eddd8e45ead6fd5ff9a24
+    This command was run using /cm/shared/package/hadoop/hadoop-2.5.0/share/hadoop/common/hadoop-common-2.5.0.jar
+  \end{lstlisting}
+  
+  
+  \section{WordCount Tutorial}
+  
+  For this tutorial you'll execute the famous WordCount example. This is a simple application that counts the number of occurrences of each word in a given input file. You can run this tutorial in two modes: 
+  \begin{enumerate}
+    \item local-standalone: This mode is not using the Hadoop cluster at all. It runs the code on a single machine e.g. your laptop/workstation and uses the local file system. You can use this mode for testing and debugging your code
+    \item fully-distributed: This mode uses the Hadoop cluster and the Hadoop distributed file system (hdfs). This is entirely different from the local file system on the head node of DAS4. The map and reduce jobs run on different nodes in the cluster  therefore, you'll not be able to see debug messages printed in stdout or stderr. Use this mode when running your final experiments
+  \end{enumerate}
+  
+  Download the project code from blackboard. The project contains the following folders and files: 
+  
+  \begin{itemize}
+    \item lib/: The libraries of the project. They include the Hadoop API (\url{http://hadoop.apache.org/}), the Stanford Natural Language Processing API (\url{http://nlp.stanford.edu/}) and the JLangDetect API (\url{https://github.com/melix/jlangdetect}). The last two APIs are necessary for the assignment and they are used for sentiment analysis\footnote{Sentiment analysis aims to determine the attitude of a person} and language identification\footnote{Weather the written language is Dutch, English, etc. } in a text
+    \item src/ : The source code
+    \item compile.sh :A script to compile the code
+  \end{itemize}
+  
+  
+  \subsection{Configure the Job}
+  
+  Look at the class in \texttt{src/nl/uva/AssignmentMapreduce.java}. This class contains the main method and the job configuration. 
+  % \lstinputlisting[language=Java]{../src/nl/uva/AssignmentMapreduce.java}
+  As you can see in method \texttt{configureJob()} we set the classes for the map and reduce task. After setting the map class we set the type for the map output key/value pairs:
+  
+  \lstset{language=Java}      
+  \begin{lstlisting}
+    conf.setMapOutputKeyClass(Text.class);
+    conf.setMapOutputValueClass(IntWritable.class);
+  \end{lstlisting}
+  
+  We also need to set the input and output type of the input files for the mappers 
+  \begin{lstlisting}
+    conf.setInputFormat(TextInputFormat.class);
+  \end{lstlisting}
+  This line is important for specifying the way the input is going to be split. The \texttt{TextInputFormat} is meant for plain text files. Files are broken into lines. Keys are the position in the file, and values are the line of text.
+  
+  
+  The data types emitted by the reducer are set by \texttt{setOutputKeyClass()} and \texttt{setOutputValueClass()}:
+  
+  \begin{lstlisting}
+    conf.setOutputKeyClass(Text.class);
+    conf.setOutputValueClass(Text.class);
+  \end{lstlisting}       
+  
+  
+  Next, we need to set the input and output paths for the entire job. The variable \texttt{dataset} is the path of the text file we'll use to count the words, and the \texttt{outputFolder} is where we'll put the results. 
+  
+  \begin{lstlisting}
+    Path localPath = new Path(dataset);
+    FileInputFormat.setInputPaths(conf, localPath);
+    FileOutputFormat.setOutputPath(conf, new Path(outputFolder));
+  \end{lstlisting}       
+  
+  \textbf{Attention}: The input and output paths can be local in the case we are running the job in local-standalone mode or hdfs paths in case you are running in fully-distributed mode. 
+  
+  Finally, we set the maximum number of mappers and reducers for the job:
+  \begin{lstlisting}
+    if (maxMap > -1) {
+      conf.setNumReduceTasks(maxMap);
+      conf.setNumMapTasks(maxMap);
+    }
+  \end{lstlisting}
+  
+  
+  \subsection{Map}
+  
+  After configuring the job we define the Map job. Look at the class in \texttt{src/nl/uva/Map.java}: This class contains the map job. It effectively reads the input file line by line and transmits the key/value pairs. The key in this case is the word and the value is one.
+  % \lstinputlisting[language=Java]{../src/nl/uva/Map.java}
+  
+  Note that in the class declaration we implement the \texttt{Mapper} interface. When implementing the \texttt{Mapper} interface, it is important to correctly define the type of the input and output key/value pairs
+  \begin{lstlisting}
+    implements Mapper<LongWritable, Text, Text, IntWritable> 
+  \end{lstlisting}
+  
+  That same must be done when declaring the \texttt{map} method:
+  \begin{lstlisting}
+    LongWritable key, Text value, OutputCollector<Text, IntWritable> oc
+  \end{lstlisting}
+  
+  
+  Next in the method we split the incoming lines into words:
+  \begin{lstlisting}
+    StringTokenizer itr = new StringTokenizer(value.toString());
+  \end{lstlisting}
+  
+  and simply iterate through the words and emit them to the reducer: 
+  \begin{lstlisting}
+    while (itr.hasMoreTokens()) {
+      word.set(itr.nextToken());
+      oc.collect(word, one);
+    }
+  \end{lstlisting}
+  
+  
+  The rest of the lines are for reporting the mapper's progress:
+  
+  \begin{lstlisting}
+    rprtr.incrCounter(Counters.INPUT_LINES, 1);
+    count++;
+    if ((++count % 100) == 0) {
+    rprtr.setStatus("Finished processing " + count + " records");
+  }
+\end{lstlisting}
+
+
+The emitted key/value pairs will be grouped into keys (in this case words) and transmitted to the reducer. 
+% \lstinputlisting[language=Java]{../src/nl/uva/Reduce.java}
+
+\subsection{Reduce}
+
+Look at the class in \texttt{src/nl/uva/Reduce.java}. As with the \texttt{Map} class, in the \texttt{Reduce} class declaration we implement the \texttt{Reducer} interface. When implementing the \texttt{Reducer} interface, it is important to correctly define the type of the input and output key/value pairs:
+\begin{lstlisting}
+  implements Reducer<Text, IntWritable, Text, IntWritable> 
+\end{lstlisting}
+
+That same must be done when declaring the \texttt{reduce} method:
+\begin{lstlisting}
+  Text key, Iterator<IntWritable> itrtr, OutputCollector<Text, IntWritable> output
+\end{lstlisting}
+
+
+The \texttt{Reduce}'s class job is to add the keys (words) emitted from the \texttt{Map} class: 
+\begin{lstlisting}
+  int sum = 0;
+  int count = 0;
+  while (itrtr.hasNext()) {
+    sum += itrtr.next().get();
+  }
+\end{lstlisting}
+
+
+After the \texttt{Reduce} class has the summation it has to save it to the output: 
+
+\begin{lstlisting}
+  output.collect(key, new IntWritable(sum));
+\end{lstlisting}
+
+
+The rest of the code is for reporting the progress:
+
+\begin{lstlisting}
+  count++;
+  if ((++count % 100) == 0) {
+  rprtr.setStatus("Finished processing " + count + " records ");
+}
+rprtr.incrCounter(Counters.OUTPUT_LINES, 1);
+\end{lstlisting}
+
+The output of the \texttt{Reduce} class is saved in the output path you specified in the \texttt{outputFolder} variable in the \texttt{AssignmentMapreduce} class in the file named part-*. 
+
+\subsection{Compile \& Execute}
+
+To execute the code you should run the compile script:
+\lstset{language=}
+\begin{lstlisting}
+  $./compile.sh 
+\end{lstlisting}
+
+To make the script executable you should run:
+\begin{lstlisting}
+  $ chmod +x compile.sh
+\end{lstlisting}
+
+After compiling, a jar file named \texttt{nl.uva.AssignmentMapreduce.jar} should be created. This jar file contains all the libraries and the MappReduce job. 
+
+Before running the job you should download the \texttt{tweets2009-06-brg.txt} file from the blackboard. 
+After you have the file on you local disk you can run the job in a local-standalone mode by typing:
+
+\begin{lstlisting}
+  $ java -jar nl.uva.AssignmentMapreduce.jar tweets2009-06-brg.txt out 1 
+\end{lstlisting}
+
+Before running the job in fully-distributed mode you should copy the \texttt{tweets2009-06-brg.txt} on the hdfs. To do that you can type:
+
+\begin{lstlisting}
+  $ hdfs dfs -copyFromLocal tweets2009-06-brg.txt
+\end{lstlisting}
+
+This will copy the \texttt{tweets2009-06-brg.txt} file on the hdfs at \texttt{/user/\$USER}. For a full list of commands for the hdfs you can look at : \url{http://hadoop.apache.org/docs/r2.5.1/hadoop-project-dist/hadoop-common/FileSystemShell.html}
+
+To run the job in a fully-distributed mode (on DAS4) type: 
+\begin{lstlisting}
+  $ hadoop jar nl.uva.AssignmentMapreduce.jar tweets2009-06-brg.txt out 1
+\end{lstlisting}
+
+\textbf{Attention:} If you attempt to run the job for the second time you will get an error like:
+\begin{lstlisting}
+  org.apache.hadoop.mapred.FileAlreadyExistsException: Output directory hdfs://master.ib.cluster:8020/user/$USER/out already exists
+\end{lstlisting}
+
+If you want to run the job again, either delete the output folder or specify another one. 
+
+\subsection{Monitoring}
+
+After summiting a job you'll see something like this:
+
+\begin{lstlisting}
+  14/11/17 13:08:24 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1415872193517_0152
+  14/11/17 13:08:24 INFO impl.YarnClientImpl: Submitted application application_1415872193517_0152
+  14/11/17 13:08:24 INFO mapreduce.Job: The url to track the job: http://fs0.das4.cs.vu.nl:8088/proxy/application_1415872193517_0152/
+  14/11/17 13:08:24 INFO mapreduce.Job: Running job: job_1415872193517_0152
+  14/11/17 13:08:31 INFO mapreduce.Job: Job job_1415872193517_0152 running in uber mode : false
+\end{lstlisting}
+
+You can monitor the job's progress with :
+
+\begin{enumerate}
+  \item Browser: Use the url to track you job
+  
+  \item Command-line: Use the job id and type:
+  \begin{lstlisting}
+   $hadoop job -status <JOB ID>
+  \end{lstlisting}
+  
+  where JOB\_ID looks like this: \texttt{job\_1415872193517\_0152}
+\end{enumerate}
+
+Additionally if you want to list all jobs running you can use:
+\begin{lstlisting}
+$hadoop job -list
+\end{lstlisting}
+
+To kill a job:
+
+\begin{lstlisting}
+$hadoop job -kill <JOB ID>
+\end{lstlisting}
+
+For more information you can type:
+\begin{lstlisting}
+$hadoop job -help
+\end{lstlisting}
+
+
+To check out the queue information you can type:
+
+\begin{lstlisting}
+$hadoop queue -list
+\end{lstlisting}
+
+For more information use:
+\begin{lstlisting}
+$hadoop queue -help
+\end{lstlisting}
+
+
+
+\section{Notes}
+To check out the code for this assignment you have to use git:
+\begin{lstlisting}
+  $ git clone https://github.com/skoulouzis/MapReduceAssignment14-15.git
+\end{lstlisting}
+
+Alternatively you can download the zip file from \url{https://github.com/skoulouzis/MapReduceAssignment14-15/archive/master.zip}
+
+\end{document}     
