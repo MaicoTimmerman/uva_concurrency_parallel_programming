@@ -40,6 +40,8 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
     @Override
     public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> oc, Reporter rprtr) throws IOException {
 
+        int count = 0;
+
         String tweet = value.toString();
         if (tweet.substring(0,1).matches("W")) {
             tweet = tweet.substring(2);
@@ -47,14 +49,16 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
 
             System.out.println(tweet);
 
-            if (lang.matches("en")) {
+            if (lang.equals("en")) {
                 /* int sent = findSentiment(tweet); */
             }
         }
 
+        /* Remove all the non-alphanumeric characters from the sentence */
         StringTokenizer itr = new StringTokenizer(value.toString()
                 .replaceAll("[^a-zA-Z0-9#]", " "));
-        int count = 0;
+
+        /* Loop through all the words */
         while (itr.hasMoreTokens()) {
             word.set(itr.nextToken());
             if (!(word.toString().toLowerCase().matches("#\\w*[a-zA-Z]+\\w*"))) {
@@ -71,6 +75,12 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
     }
 
 
+    /**
+     * Find the sentiment of a tweet.
+     *
+     * @param text
+     * @return
+     */
     private int findSentiment(String text) {
 
         Properties props = new Properties();
@@ -85,11 +95,10 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
             Annotation annotation = pipeline.process(text);
 
             for (CoreMap sentence : annotation
-                    .get(CoreAnnotations.SentencesAnnotation.class)) {
-
+                    .get(CoreAnnotations.SentencesAnnotation.class))
+            {
                 Tree tree = sentence
                     .get(SentimentCoreAnnotations.AnnotatedTree.class);
-
                 int sentiment = RNNCoreAnnotations.getPredictedClass(tree);
                 String partText = sentence.toString();
 

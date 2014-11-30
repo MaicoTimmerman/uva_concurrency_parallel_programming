@@ -51,7 +51,6 @@ public class AssignmentMapreduce extends Configured implements Tool {
                 maxMap = Integer.valueOf(args[2]);
             }
 
-
             //Start the execution
             String[] myArgs = new String[]{};
             int res = ToolRunner.run(new Configuration(), new AssignmentMapreduce(), myArgs);
@@ -62,6 +61,10 @@ public class AssignmentMapreduce extends Configured implements Tool {
         }
     }
 
+    @Override
+    /**
+     * Print the usage
+     */
     private static void printHelp() {
         System.out.println("Usage: <input dataset> <outpout folder> <max num. of mapred>\n");
         System.out.println("input dataset:\t\t\tThe path for the twitter dataset");
@@ -100,27 +103,29 @@ public class AssignmentMapreduce extends Configured implements Tool {
 
         conf.setJobName("WC");
 
-        //Set the Maper and formats
+        /* Set the Maper and formats */
         conf.setMapperClass(nl.uva.Map.class);
         conf.setMapOutputKeyClass(Text.class);
         conf.setMapOutputValueClass(IntWritable.class);
-        //Set Input Format Format to apply to the input
-        //files for the mappers
+
+        /* Set Input Format Format to apply to the input
+         * files for the mappers */
         conf.setInputFormat(TextInputFormat.class);
 
-
-        //Set the Reducer and formats
+        /* Set the Reducer and formats */
         conf.setReducerClass(nl.uva.Reduce.class);
-        //The data types emitted by the reducer are identified by
-        //setOutputKeyClass() and setOutputValueClass()
-        //It is the class for the value and output key.
+
+        /* The data types emitted by the reducer are identified by
+         * setOutputKeyClass() and setOutputValueClass()
+         * It is the class for the value and output key. */
         conf.setOutputKeyClass(Text.class);
         conf.setOutputValueClass(Text.class);
-        //Set output Format Format to apply to the output
-        //files for the reducer
+
+        /* Set output Format Format to apply to the output
+         * files for the reducer */
         conf.setOutputFormat(TextOutputFormat.class);
 
-        //Set the input path for the job
+        /* Set the input path for the job */
         Path localPath = new Path(dataset);
         FileInputFormat.setInputPaths(conf, localPath);
         FileOutputFormat.setOutputPath(conf, new Path(outputFolder));
