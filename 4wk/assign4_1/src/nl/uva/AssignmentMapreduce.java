@@ -61,7 +61,6 @@ public class AssignmentMapreduce extends Configured implements Tool {
         }
     }
 
-    @Override
     /**
      * Print the usage
      */

@@ -43,7 +43,8 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
         int count = 0;
 
         String tweet = value.toString();
-        if (tweet.substring(0,1).matches("W")) {
+        System.out.println("tweet: " + tweet);
+        if (tweet.substring(0,1).matches("W")) { //TODO: substring 0,1 does nto work on empty lines.
             tweet = tweet.substring(2);
             String lang = UberLanguageDetector.getInstance().detectLang(tweet);
 
@@ -81,32 +82,32 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
      * @param text
      * @return
      */
-    private int findSentiment(String text) {
-
-        Properties props = new Properties();
-        props.setProperty("annotators", "tokenize, ssplit, parse, sentiment");
-        props.put("parse.model", parseModelPath);
-        props.put("sentiment.model", sentimentModelPath);
-        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
-        int mainSentiment = 0;
-
-        if (text != null && text.length() > 0) {
-            int longest = 0;
-            Annotation annotation = pipeline.process(text);
-
-            for (CoreMap sentence : annotation
-                    .get(CoreAnnotations.SentencesAnnotation.class))
-            {
-                Tree tree = sentence
-                    .get(SentimentCoreAnnotations.AnnotatedTree.class);
-                int sentiment = RNNCoreAnnotations.getPredictedClass(tree);
-                String partText = sentence.toString();
-
-                if (partText.length() > longest) {
-                    mainSentiment = sentiment;
-                    longest = partText.length();
-                }
-            }
-        }
-    }
+    /* private int findSentiment(String text) { */
+    /*  */
+    /*     Properties props = new Properties(); */
+    /*     props.setProperty("annotators", "tokenize, ssplit, parse, sentiment"); */
+    /*     props.put("parse.model", parseModelPath); */
+    /*     props.put("sentiment.model", sentimentModelPath); */
+    /*     StanfordCoreNLP pipeline = new StanfordCoreNLP(props); */
+    /*     int mainSentiment = 0; */
+    /*  */
+    /*     if (text != null && text.length() > 0) { */
+    /*         int longest = 0; */
+    /*         Annotation annotation = pipeline.process(text); */
+    /*  */
+    /*         for (CoreMap sentence : annotation */
+    /*                 .get(CoreAnnotations.SentencesAnnotation.class)) */
+    /*         { */
+    /*             Tree tree = sentence */
+    /*                 .get(SentimentCoreAnnotations.AnnotatedTree.class); */
+    /*             int sentiment = RNNCoreAnnotations.getPredictedClass(tree); */
+    /*             String partText = sentence.toString(); */
+    /*  */
+    /*             if (partText.length() > longest) { */
+    /*                 mainSentiment = sentiment; */
+    /*                 longest = partText.length(); */
+    /*             } */
+    /*         } */
+    /*     } */
+    /* } */
 }
