@@ -12,6 +12,7 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.filecache.DistributedCache;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
@@ -41,7 +42,10 @@ public class AssignmentMapreduce extends Configured implements Tool {
 
     public static void main(String[] args) {
         try {
-            if (args == null || args.length < 3 || args[0].equals("-help") || args[0].equals("help")) {
+            if (args == null
+                    || args.length < 3
+                    || args[0].equals("-help")
+                    || args[0].equals("help")) {
                 printHelp();
                 System.exit(-1);
             }
@@ -52,13 +56,15 @@ public class AssignmentMapreduce extends Configured implements Tool {
                 maxMap = Integer.valueOf(args[2]);
             }
 
-            //Start the execution
+            /* Start the execution */
             String[] myArgs = new String[]{};
-            int res = ToolRunner.run(new Configuration(), new AssignmentMapreduce(), myArgs);
+            int res = ToolRunner.run(
+                    new Configuration(), new AssignmentMapreduce(), myArgs);
 
             System.exit(res);
         } catch (Exception ex) {
-            Logger.getLogger(AssignmentMapreduce.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AssignmentMapreduce.class.getName())
+                .log(Level.SEVERE, null, ex);
         }
     }
 
@@ -105,7 +111,7 @@ public class AssignmentMapreduce extends Configured implements Tool {
 
         /* Set the Maper and formats */
         conf.setMapperClass(nl.uva.Map.class);
-        conf.setMapOutputKeyClass(Text.class);
+        conf.setMapOutputKeyClass(IntWritable.class);
         conf.setMapOutputValueClass(IntWritable.class);
 
         /* Set Input Format Format to apply to the input
@@ -119,15 +125,17 @@ public class AssignmentMapreduce extends Configured implements Tool {
          * setOutputKeyClass() and setOutputValueClass()
          * It is the class for the value and output key. */
         conf.setOutputKeyClass(Text.class);
-        conf.setOutputValueClass(Text.class);
+        conf.setOutputValueClass(DoubleWritable.class);
 
         /* Set output Format Format to apply to the output
          * files for the reducer */
         conf.setOutputFormat(TextOutputFormat.class);
 
         /* Add the sentiment files to the distributed cache */
-        DistributedCache.addCacheFile(new Path("lib/englishPCFG.ser").toUri(), conf);
-        DistributedCache.addCacheFile(new Path("lib/sentiment.ser").toUri(), conf);
+        DistributedCache.addCacheFile(
+                new Path("./lib/englishPCFG.ser").toUri(), conf);
+        DistributedCache.addCacheFile(
+                new Path("./lib/sentiment.ser").toUri(), conf);
 
         /* Set the input path for the job */
         Path localPath = new Path(dataset);

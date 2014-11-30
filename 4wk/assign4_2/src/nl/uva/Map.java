@@ -34,7 +34,8 @@ import edu.stanford.nlp.util.CoreMap;
  *
  * @author S. Koulouzis
  */
-public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable> {
+public class Map extends MapReduceBase
+    implements Mapper<LongWritable, Text, IntWritable, IntWritable> {
 
     Log log = LogFactory.getLog(Map.class);
     private Text word = new Text();
@@ -53,41 +54,37 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
         try {
             cachedFiles = DistributedCache.getLocalCacheFiles(conf);
             parseModelPath = cachedFiles[0];
-            sentimentModelPath = cachedFiles[0];
+            sentimentModelPath = cachedFiles[1];
         } catch (Exception ex) {
             Logger.getLogger(Map.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     @Override
-    public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> oc, Reporter rprtr) throws IOException {
+    public void map(LongWritable key, Text value,
+            OutputCollector<IntWritable, IntWritable> oc, Reporter rprtr)
+    throws IOException {
 
-        IntWritable sent;
+        IntWritable sentiment;
 
         String tweet = value.toString();
 
         /* Check for empty strings */
-        if (!tweet.isEmpty()) {
-            System.out.println("not empty");
-            /* Only process the actual tweet, not the date or the URL */
-            if (tweet.substring(0,1).matches("W")) {
-                System.out.println("contains W");
-                /* Check if the tweet contains a hashtag */
-                if (tweet.matches("(?s).*#\\w*[a-zA-Z]+\\w*.*")) {
-                    tweet = tweet.substring(2);
-                    String lang = UberLanguageDetector.getInstance().detectLang(tweet);
-                    System.out.println("contains hastag");
+        /* Only process the actual tweet, not the date or the URL */
+        if ((!tweet.isEmpty()) && (tweet.substring(0,1).matches("W"))) {
+            /* Check if the tweet contains a hashtag */
+            if (tweet.matches("(?s).*#\\w*[a-zA-Z]+\\w*.*")) {
+                tweet = tweet.substring(2);
+                String lang = UberLanguageDetector.getInstance()
+                    .detectLang(tweet);
 
-                    /* Check if language is English */
-                    if (lang.equals("en")) {
-                        sent = new IntWritable(findSentiment(tweet));
+                /* Check if language is English */
+                if (lang.equals("en")) {
+                    sentiment = new IntWritable(findSentiment(tweet));
 
-                        /* Send the tweet and the sentiment value to reduce */
-                        System.out.println("tweet: "+tweet+", sentiment: "+sent);
-                        sendword.set(tweet);
-                        oc.collect(sendword, sent);
-                        rprtr.incrCounter(Counters.INPUT_LINES, 1);
-                    }
+                    /* Send the tweet and the sentiment value to reduce */
+                    oc.collect(new IntWritable(42), sentiment);
+                    rprtr.incrCounter(Counters.INPUT_LINES, 1);
                 }
             }
         }
@@ -104,8 +101,8 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
 
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, parse, sentiment");
-        props.put("parse.model", parseModelPath);
-        props.put("sentiment.model", sentimentModelPath);
+        props.put("parse.model", parseModelPath.toString());
+        props.put("sentiment.model", sentimentModelPath.toString());
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
         int mainSentiment = 0;
 
