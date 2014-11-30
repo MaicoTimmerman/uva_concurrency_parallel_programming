@@ -40,9 +40,9 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
     @Override
     public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> oc, Reporter rprtr) throws IOException {
 
-        String textline = value.toString();
-        if (textline.substring(0,1).matches("W")) {
-            String tweet = text.substring(2);
+        String tweet = value.toString();
+        if (tweet.substring(0,1).matches("W")) {
+            tweet = tweet.substring(2);
             String lang = UberLanguageDetector.getInstance().detectLang(tweet);
 
             System.out.println(tweet);
@@ -72,21 +72,27 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
 
 
     private int findSentiment(String text) {
+
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, parse, sentiment");
         props.put("parse.model", parseModelPath);
         props.put("sentiment.model", sentimentModelPath);
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
         int mainSentiment = 0;
+
         if (text != null && text.length() > 0) {
             int longest = 0;
             Annotation annotation = pipeline.process(text);
+
             for (CoreMap sentence : annotation
-                .get(CoreAnnotations.SentencesAnnotation.class)) {
+                    .get(CoreAnnotations.SentencesAnnotation.class)) {
+
                 Tree tree = sentence
-                .get(SentimentCoreAnnotations.AnnotatedTree.class);
+                    .get(SentimentCoreAnnotations.AnnotatedTree.class);
+
                 int sentiment = RNNCoreAnnotations.getPredictedClass(tree);
                 String partText = sentence.toString();
+
                 if (partText.length() > longest) {
                     mainSentiment = sentiment;
                     longest = partText.length();
