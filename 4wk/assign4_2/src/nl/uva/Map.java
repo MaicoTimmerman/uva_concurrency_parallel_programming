@@ -43,22 +43,28 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
 
         String tweet = value.toString();
         System.out.println("tweet: " + tweet);
+
+        /* Check for empty strings */
         if (!tweet.isEmpty()) {
-            if (tweet.substring(0,1).matches("W")) { //DONE: substring 0,1 does not work on empty lines.
-                tweet = tweet.substring(2);
-                String lang = UberLanguageDetector.getInstance().detectLang(tweet);
+            /* Only process the actual tweet, not the date or the URL */
+            if (tweet.substring(0,1).matches("W")) {
+                /* Check if the tweet contains a hashtag */
+                if (tweet.contains("#\\w*[a-zA-Z]+\\w*")) {
+                    tweet = tweet.substring(2);
+                    String lang = UberLanguageDetector.getInstance().detectLang(tweet);
 
-                System.out.println(tweet);
-
-                if (lang.equals("en")) {
-                    sent = new IntWritable(findSentiment(tweet));
+                    /* Check if language is English */
+                    if (lang.equals("en")) {
+                        sent = new IntWritable(findSentiment(tweet));
+                        /* Send the tweet and the sentiment value to reduce */
+                        sendword.set(tweet);
+                        oc.collect(sendword, sent);
+                        rprtr.incrCounter(Counters.INPUT_LINES, 1);
+                    }
                 }
             }
         }
 
-    sendword.set(tweet);
-    oc.collect(sendword, sent);
-    rprtr.incrCounter(Counters.INPUT_LINES, 1);
     }
 
 
