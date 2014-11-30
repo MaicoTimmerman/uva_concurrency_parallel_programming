@@ -38,24 +38,11 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
     }
 
     @Override
-    public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> oc, Reporter rprtr) throws IOException {
+    public void map(LongWritable key, Text value,
+            OutputCollector<Text, IntWritable> oc, Reporter rprtr)
+    throws IOException {
 
         int count = 0;
-
-        String tweet = value.toString();
-        System.out.println("tweet: " + tweet);
-        if (!tweet.isEmpty()) {
-            if (tweet.substring(0,1).matches("W")) { //DONE: substring 0,1 does not work on empty lines.
-                tweet = tweet.substring(2);
-                String lang = UberLanguageDetector.getInstance().detectLang(tweet);
-
-                System.out.println(tweet);
-
-                if (lang.equals("en")) {
-                    /* int sent = findSentiment(tweet); */
-                }
-            }
-        }
 
         /* Remove all the non-alphanumeric characters from the sentence */
         StringTokenizer itr = new StringTokenizer(value.toString()
@@ -64,52 +51,21 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
         /* Loop through all the words */
         while (itr.hasMoreTokens()) {
             word.set(itr.nextToken());
+
+            /* Test if a hashtag is not present in the current sentence. */
             if (!(word.toString().toLowerCase().matches("#\\w*[a-zA-Z]+\\w*"))) {
                 continue;
             }
+
+            /* Send the result to the Reducer */
             sendword.set(word.toString().toLowerCase());
             oc.collect(sendword, one);
             rprtr.incrCounter(Counters.INPUT_LINES, 1);
+
             count++;
             if ((++count % 100) == 0) {
                 rprtr.setStatus("Finished processing " + count + " records");
             }
         }
     }
-
-
-    /**
-     * Find the sentiment of a tweet.
-     *
-     * @param text
-     * @return
-     */
-    /* private int findSentiment(String text) { */
-    /*  */
-    /*     Properties props = new Properties(); */
-    /*     props.setProperty("annotators", "tokenize, ssplit, parse, sentiment"); */
-    /*     props.put("parse.model", parseModelPath); */
-    /*     props.put("sentiment.model", sentimentModelPath); */
-    /*     StanfordCoreNLP pipeline = new StanfordCoreNLP(props); */
-    /*     int mainSentiment = 0; */
-    /*  */
-    /*     if (text != null && text.length() > 0) { */
-    /*         int longest = 0; */
-    /*         Annotation annotation = pipeline.process(text); */
-    /*  */
-    /*         for (CoreMap sentence : annotation */
-    /*                 .get(CoreAnnotations.SentencesAnnotation.class)) */
-    /*         { */
-    /*             Tree tree = sentence */
-    /*                 .get(SentimentCoreAnnotations.AnnotatedTree.class); */
-    /*             int sentiment = RNNCoreAnnotations.getPredictedClass(tree); */
-    /*             String partText = sentence.toString(); */
-    /*  */
-    /*             if (partText.length() > longest) { */
-    /*                 mainSentiment = sentiment; */
-    /*                 longest = partText.length(); */
-    /*             } */
-    /*         } */
-    /*     } */
-    /* } */
 }
