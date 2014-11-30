@@ -43,7 +43,7 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
         String textline = value.toString();
         if (textline.substring(0,1).matches("W")) {
             String tweet = text.substring(2);
-            String lang = UberLanguageDetector detector = UberLanguageDetector.getInstance().detectLang(tweet);
+            String lang = UberLanguageDetector.getInstance().detectLang(tweet);
 
             System.out.println(tweet);
 
