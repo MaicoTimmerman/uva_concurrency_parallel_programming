@@ -28,10 +28,10 @@ import edu.stanford.nlp.util.CoreMap;
  * @author R. Klusman
  */
 public class Reduce extends MapReduceBase
-    implements Reducer<Text, IntWritable, Text, DoubleWritable> {
+    implements Reducer<IntWritable, IntWritable, Text, DoubleWritable> {
 
     @Override
-    public void reduce(Text key, Iterator<IntWritable> itrtr,
+    public void reduce(IntWritable key, Iterator<IntWritable> itrtr,
             OutputCollector<Text, DoubleWritable> output, Reporter rprtr)
     throws IOException {
 
@@ -61,6 +61,6 @@ public class Reduce extends MapReduceBase
 
         /* Return the values */
         output.collect(new Text("Stddev: "), new DoubleWritable(stddev));
-        output.collect(new Text("Mean: "), new DoubleWritable(stddev));
+        output.collect(new Text("Mean: "), new DoubleWritable(mean));
     }
 }

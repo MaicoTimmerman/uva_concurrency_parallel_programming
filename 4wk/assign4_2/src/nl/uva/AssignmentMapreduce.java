@@ -37,13 +37,14 @@ public class AssignmentMapreduce extends Configured implements Tool {
 
     private static String dataset;
     private static String outputFolder;
+    private static String libFolder;
     private static Integer maxMap = -1;
     Log log = LogFactory.getLog(AssignmentMapreduce.class);
 
     public static void main(String[] args) {
         try {
             if (args == null
-                    || args.length < 3
+                    || args.length < 4
                     || args[0].equals("-help")
                     || args[0].equals("help")) {
                 printHelp();
@@ -52,8 +53,9 @@ public class AssignmentMapreduce extends Configured implements Tool {
 
             dataset = args[0];
             outputFolder = args[1];
-            if (args.length >= 3) {
-                maxMap = Integer.valueOf(args[2]);
+            libFolder = args[2];
+            if (args.length >= 4) {
+                maxMap = Integer.valueOf(args[3]);
             }
 
             /* Start the execution */
@@ -72,10 +74,11 @@ public class AssignmentMapreduce extends Configured implements Tool {
      * Print the usage
      */
     private static void printHelp() {
-        System.out.println("Usage: <input dataset> <outpout folder> <max num. of mapred>\n");
+    System.out.println("Usage: <input dataset> <outpout folder> <lib folder> <max num. of mapred>\n");
         System.out.println("input dataset:\t\t\tThe path for the twitter dataset");
         System.out.println("outpout folder:\t\t\tThe location where the results will "
                 + "be saved.");
+        System.out.println("seriable lib folder:\t\tThe location of the folder of with seriables.");
         System.out.println("max num. of mapred:\t\tThe maximum number of map and "
                 + "reduce tasks that will be run simultaneously by a task tracker.");
     }
@@ -133,9 +136,9 @@ public class AssignmentMapreduce extends Configured implements Tool {
 
         /* Add the sentiment files to the distributed cache */
         DistributedCache.addCacheFile(
-                new Path("./lib/englishPCFG.ser").toUri(), conf);
+                new Path(libFolder + "englishPCFG.ser").toUri(), conf);
         DistributedCache.addCacheFile(
-                new Path("./lib/sentiment.ser").toUri(), conf);
+                new Path(libFolder + "sentiment.ser").toUri(), conf);
 
         /* Set the input path for the job */
         Path localPath = new Path(dataset);
