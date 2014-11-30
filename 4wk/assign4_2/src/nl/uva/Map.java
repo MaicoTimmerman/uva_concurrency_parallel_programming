@@ -28,7 +28,6 @@ import edu.stanford.nlp.util.CoreMap;
 public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable> {
 
     Log log = LogFactory.getLog(Map.class);
-    private final static IntWritable one = new IntWritable(1);
     private Text word = new Text();
     private Text sendword = new Text();
 
@@ -40,7 +39,7 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
     @Override
     public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> oc, Reporter rprtr) throws IOException {
 
-        int count = 0;
+        IntWritable sent;
 
         String tweet = value.toString();
         System.out.println("tweet: " + tweet);
@@ -52,29 +51,14 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
                 System.out.println(tweet);
 
                 if (lang.equals("en")) {
-                    /* int sent = findSentiment(tweet); */
+                    sent = new IntWritable(findSentiment(tweet));
                 }
             }
         }
 
-        /* Remove all the non-alphanumeric characters from the sentence */
-        StringTokenizer itr = new StringTokenizer(value.toString()
-                .replaceAll("[^a-zA-Z0-9#]", " "));
-
-        /* Loop through all the words */
-        while (itr.hasMoreTokens()) {
-            word.set(itr.nextToken());
-            if (!(word.toString().toLowerCase().matches("#\\w*[a-zA-Z]+\\w*"))) {
-                continue;
-            }
-            sendword.set(word.toString().toLowerCase());
-            oc.collect(sendword, one);
-            rprtr.incrCounter(Counters.INPUT_LINES, 1);
-            count++;
-            if ((++count % 100) == 0) {
-                rprtr.setStatus("Finished processing " + count + " records");
-            }
-        }
+    sendword.set(tweet);
+    oc.collect(sendword, sent);
+    rprtr.incrCounter(Counters.INPUT_LINES, 1);
     }
 
 
@@ -84,32 +68,32 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
      * @param text
      * @return
      */
-    /* private int findSentiment(String text) { */
-    /*  */
-    /*     Properties props = new Properties(); */
-    /*     props.setProperty("annotators", "tokenize, ssplit, parse, sentiment"); */
-    /*     props.put("parse.model", parseModelPath); */
-    /*     props.put("sentiment.model", sentimentModelPath); */
-    /*     StanfordCoreNLP pipeline = new StanfordCoreNLP(props); */
-    /*     int mainSentiment = 0; */
-    /*  */
-    /*     if (text != null && text.length() > 0) { */
-    /*         int longest = 0; */
-    /*         Annotation annotation = pipeline.process(text); */
-    /*  */
-    /*         for (CoreMap sentence : annotation */
-    /*                 .get(CoreAnnotations.SentencesAnnotation.class)) */
-    /*         { */
-    /*             Tree tree = sentence */
-    /*                 .get(SentimentCoreAnnotations.AnnotatedTree.class); */
-    /*             int sentiment = RNNCoreAnnotations.getPredictedClass(tree); */
-    /*             String partText = sentence.toString(); */
-    /*  */
-    /*             if (partText.length() > longest) { */
-    /*                 mainSentiment = sentiment; */
-    /*                 longest = partText.length(); */
-    /*             } */
-    /*         } */
-    /*     } */
-    /* } */
+    private int findSentiment(String text) {
+
+        Properties props = new Properties();
+        props.setProperty("annotators", "tokenize, ssplit, parse, sentiment");
+        props.put("parse.model", parseModelPath);
+        props.put("sentiment.model", sentimentModelPath);
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+        int mainSentiment = 0;
+
+        if (text != null && text.length() > 0) {
+            int longest = 0;
+            Annotation annotation = pipeline.process(text);
+
+            for (CoreMap sentence : annotation
+                    .get(CoreAnnotations.SentencesAnnotation.class))
+            {
+                Tree tree = sentence
+                    .get(SentimentCoreAnnotations.AnnotatedTree.class);
+                int sentiment = RNNCoreAnnotations.getPredictedClass(tree);
+                String partText = sentence.toString();
+
+                if (partText.length() > longest) {
+                    mainSentiment = sentiment;
+                    longest = partText.length();
+                }
+            }
+        }
+    }
 }
