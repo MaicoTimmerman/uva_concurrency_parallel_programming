@@ -34,6 +34,10 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
         int count = 0;
         while (itr.hasMoreTokens()) {
             word.set(itr.nextToken());
+            if (!(word.toString().toLowerCase().matches("#\\w*[a-zA-Z]+\\w*"))) {
+                continue;
+            }
+            System.out.println(word);
             oc.collect(word, one);
             rprtr.incrCounter(Counters.INPUT_LINES, 1);
             count++;
