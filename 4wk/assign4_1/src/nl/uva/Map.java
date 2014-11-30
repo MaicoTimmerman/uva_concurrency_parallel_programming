@@ -22,6 +22,7 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
     Log log = LogFactory.getLog(Map.class);
     private final static IntWritable one = new IntWritable(1);
     private Text word = new Text();
+    private Text sendword = new Text();
 
     static enum Counters {
 
@@ -30,15 +31,16 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
 
     @Override
     public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> oc, Reporter rprtr) throws IOException {
-        StringTokenizer itr = new StringTokenizer(value.toString());
+        StringTokenizer itr = new StringTokenizer(value.toString()
+                .replaceAll("[^a-zA-Z0-9#]", " "));
         int count = 0;
         while (itr.hasMoreTokens()) {
             word.set(itr.nextToken());
             if (!(word.toString().toLowerCase().matches("#\\w*[a-zA-Z]+\\w*"))) {
                 continue;
             }
-            System.out.println(word);
-            oc.collect(word, one);
+            sendword.set(word.toString().toLowerCase());
+            oc.collect(sendword, one);
             rprtr.incrCounter(Counters.INPUT_LINES, 1);
             count++;
             if ((++count % 100) == 0) {
