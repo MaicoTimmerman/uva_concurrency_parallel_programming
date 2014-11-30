@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.filecache.DistributedCache;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -123,6 +124,10 @@ public class AssignmentMapreduce extends Configured implements Tool {
         /* Set output Format Format to apply to the output
          * files for the reducer */
         conf.setOutputFormat(TextOutputFormat.class);
+
+        /* Add the sentiment files to the distributed cache */
+        DistributedCache.addCacheFile(new Path("lib/sentiment.ser.gz").toUri(), conf);
+        DistributedCache.addCacheFile(new Path("lib/englishPCFG.ser.gz").toUri(), conf);
 
         /* Set the input path for the job */
         Path localPath = new Path(dataset);

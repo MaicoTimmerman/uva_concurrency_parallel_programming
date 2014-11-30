@@ -1,13 +1,21 @@
 package nl.uva;
 
 import java.io.IOException;
+import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.logging.*;
 import me.champeau.ld.UberLanguageDetector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobClient;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -31,10 +39,22 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
     private final static IntWritable one = new IntWritable(1);
     private Text word = new Text();
     private Text sendword = new Text();
+    private Path parseModelPath = new Path("lib/englishPCFG.ser.gz");
+    private Path sentimentModelPath = new Path("lib/sentiment.ser.gz");;
 
     static enum Counters {
 
         INPUT_LINES
+    }
+
+    @Override
+    public void configure(JobConf conf) {
+        try {
+            parseModelPath = new Path("lib/englishPCFG.ser.gz");
+            sentimentModelPath = new Path("lib/sentiment.ser.gz");
+        } catch (Exception ex) {
+            Logger.getLogger(Map.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
@@ -43,36 +63,17 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
         int count = 0;
 
         String tweet = value.toString();
-        System.out.println("tweet: " + tweet);
         if (!tweet.isEmpty()) {
-            if (tweet.substring(0,1).matches("W")) { //DONE: substring 0,1 does not work on empty lines.
+            if (tweet.substring(0,1).matches("W")) {
                 tweet = tweet.substring(2);
                 String lang = UberLanguageDetector.getInstance().detectLang(tweet);
 
                 System.out.println(tweet);
 
                 if (lang.equals("en")) {
-                    /* int sent = findSentiment(tweet); */
+                    int sent = findSentiment(tweet);
+                    System.out.println("Ill find sentiment:\n"+ sent);
                 }
-            }
-        }
-
-        /* Remove all the non-alphanumeric characters from the sentence */
-        StringTokenizer itr = new StringTokenizer(value.toString()
-                .replaceAll("[^a-zA-Z0-9#]", " "));
-
-        /* Loop through all the words */
-        while (itr.hasMoreTokens()) {
-            word.set(itr.nextToken());
-            if (!(word.toString().toLowerCase().matches("#\\w*[a-zA-Z]+\\w*"))) {
-                continue;
-            }
-            sendword.set(word.toString().toLowerCase());
-            oc.collect(sendword, one);
-            rprtr.incrCounter(Counters.INPUT_LINES, 1);
-            count++;
-            if ((++count % 100) == 0) {
-                rprtr.setStatus("Finished processing " + count + " records");
             }
         }
     }
@@ -84,32 +85,31 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
      * @param text
      * @return
      */
-    /* private int findSentiment(String text) { */
-    /*  */
-    /*     Properties props = new Properties(); */
-    /*     props.setProperty("annotators", "tokenize, ssplit, parse, sentiment"); */
-    /*     props.put("parse.model", parseModelPath); */
-    /*     props.put("sentiment.model", sentimentModelPath); */
-    /*     StanfordCoreNLP pipeline = new StanfordCoreNLP(props); */
-    /*     int mainSentiment = 0; */
-    /*  */
-    /*     if (text != null && text.length() > 0) { */
-    /*         int longest = 0; */
-    /*         Annotation annotation = pipeline.process(text); */
-    /*  */
-    /*         for (CoreMap sentence : annotation */
-    /*                 .get(CoreAnnotations.SentencesAnnotation.class)) */
-    /*         { */
-    /*             Tree tree = sentence */
-    /*                 .get(SentimentCoreAnnotations.AnnotatedTree.class); */
-    /*             int sentiment = RNNCoreAnnotations.getPredictedClass(tree); */
-    /*             String partText = sentence.toString(); */
-    /*  */
-    /*             if (partText.length() > longest) { */
-    /*                 mainSentiment = sentiment; */
-    /*                 longest = partText.length(); */
-    /*             } */
-    /*         } */
-    /*     } */
-    /* } */
+    private int findSentiment(String text) {
+
+        Properties props = new Properties();
+        props.setProperty("annotators", "tokenize, ssplit, parse, sentiment");
+        props.put("parse.model", parseModelPath);
+        props.put("sentiment.model", sentimentModelPath);
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+        int mainSentiment = 0;
+
+        if (text != null && text.length() > 0) {
+            int longest = 0;
+            Annotation annotation = pipeline.process(text);
+
+            for (CoreMap sentence : annotation
+                    .get(CoreAnnotations.SentencesAnnotation.class)) {
+                Tree tree = sentence.get(SentimentCoreAnnotations.AnnotatedTree.class);
+                int sentiment = RNNCoreAnnotations.getPredictedClass(tree);
+                String partText = sentence.toString();
+
+                if (partText.length() > longest) {
+                    mainSentiment = sentiment;
+                    longest = partText.length();
+                }
+            }
+        }
+        return mainSentiment;
+    }
 }
