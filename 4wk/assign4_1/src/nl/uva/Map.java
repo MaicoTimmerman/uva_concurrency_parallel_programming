@@ -44,14 +44,16 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
 
         String tweet = value.toString();
         System.out.println("tweet: " + tweet);
-        if (tweet.substring(0,1).matches("W")) { //TODO: substring 0,1 does nto work on empty lines.
-            tweet = tweet.substring(2);
-            String lang = UberLanguageDetector.getInstance().detectLang(tweet);
+        if (!tweet.isEmpty()) {
+            if (tweet.substring(0,1).matches("W")) { //DONE: substring 0,1 does not work on empty lines.
+                tweet = tweet.substring(2);
+                String lang = UberLanguageDetector.getInstance().detectLang(tweet);
 
-            System.out.println(tweet);
+                System.out.println(tweet);
 
-            if (lang.equals("en")) {
-                /* int sent = findSentiment(tweet); */
+                if (lang.equals("en")) {
+                    /* int sent = findSentiment(tweet); */
+                }
             }
         }
 
