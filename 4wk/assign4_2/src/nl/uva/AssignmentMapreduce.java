@@ -126,8 +126,8 @@ public class AssignmentMapreduce extends Configured implements Tool {
         conf.setOutputFormat(TextOutputFormat.class);
 
         /* Add the sentiment files to the distributed cache */
-        DistributedCache.addCacheFile(new Path("lib/sentiment.ser.gz").toUri(), conf);
-        DistributedCache.addCacheFile(new Path("lib/englishPCFG.ser.gz").toUri(), conf);
+        DistributedCache.addCacheFile(new Path("lib/englishPCFG.ser").toUri(), conf);
+        DistributedCache.addCacheFile(new Path("lib/sentiment.ser").toUri(), conf);
 
         /* Set the input path for the job */
         Path localPath = new Path(dataset);

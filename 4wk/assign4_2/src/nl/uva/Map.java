@@ -16,6 +16,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.filecache.DistributedCache;
 import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -38,8 +39,9 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
     Log log = LogFactory.getLog(Map.class);
     private Text word = new Text();
     private Text sendword = new Text();
-    private Path parseModelPath = new Path("lib/englishPCFG.ser.gz");
-    private Path sentimentModelPath = new Path("lib/sentiment.ser.gz");;
+    private Path[] cachedFiles;
+    private Path parseModelPath;
+    private Path sentimentModelPath;
 
     static enum Counters {
 
@@ -49,8 +51,9 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
     @Override
     public void configure(JobConf conf) {
         try {
-            parseModelPath = new Path("lib/englishPCFG.ser.gz");
-            sentimentModelPath = new Path("lib/sentiment.ser.gz");
+            cachedFiles = DistributedCache.getLocalCacheFiles(conf);
+            parseModelPath = cachedFiles[0];
+            sentimentModelPath = cachedFiles[0];
         } catch (Exception ex) {
             Logger.getLogger(Map.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -65,18 +68,22 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
 
         /* Check for empty strings */
         if (!tweet.isEmpty()) {
+            System.out.println("not empty");
             /* Only process the actual tweet, not the date or the URL */
             if (tweet.substring(0,1).matches("W")) {
+                System.out.println("contains W");
                 /* Check if the tweet contains a hashtag */
-                if (tweet.contains("#\\w*[a-zA-Z]+\\w*")) {
+                if (tweet.matches("(?s).*#\\w*[a-zA-Z]+\\w*.*")) {
                     tweet = tweet.substring(2);
                     String lang = UberLanguageDetector.getInstance().detectLang(tweet);
+                    System.out.println("contains hastag");
 
                     /* Check if language is English */
                     if (lang.equals("en")) {
                         sent = new IntWritable(findSentiment(tweet));
 
                         /* Send the tweet and the sentiment value to reduce */
+                        System.out.println("tweet: "+tweet+", sentiment: "+sent);
                         sendword.set(tweet);
                         oc.collect(sendword, sent);
                         rprtr.incrCounter(Counters.INPUT_LINES, 1);
