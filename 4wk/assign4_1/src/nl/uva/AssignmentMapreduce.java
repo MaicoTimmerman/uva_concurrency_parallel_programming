@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import me.champeau.ld.UberLanguageDetector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -19,6 +20,13 @@ import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.rnn.RNNCoreAnnotations;
+import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
+import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.util.CoreMap;
 
 /**
  * @author S. Koulouzis
@@ -96,20 +104,20 @@ public class AssignmentMapreduce extends Configured implements Tool {
         conf.setMapperClass(nl.uva.Map.class);
         conf.setMapOutputKeyClass(Text.class);
         conf.setMapOutputValueClass(IntWritable.class);
-        //Set Input Format Format to apply to the input 
-        //files for the mappers 
+        //Set Input Format Format to apply to the input
+        //files for the mappers
         conf.setInputFormat(TextInputFormat.class);
 
 
         //Set the Reducer and formats
         conf.setReducerClass(nl.uva.Reduce.class);
-        //The data types emitted by the reducer are identified by 
+        //The data types emitted by the reducer are identified by
         //setOutputKeyClass() and setOutputValueClass()
         //It is the class for the value and output key.
         conf.setOutputKeyClass(Text.class);
         conf.setOutputValueClass(Text.class);
         //Set output Format Format to apply to the output
-        //files for the reducer 
+        //files for the reducer
         conf.setOutputFormat(TextOutputFormat.class);
 
         //Set the input path for the job

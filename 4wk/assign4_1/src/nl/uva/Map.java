@@ -2,6 +2,7 @@ package nl.uva;
 
 import java.io.IOException;
 import java.util.StringTokenizer;
+import me.champeau.ld.UberLanguageDetector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.io.IntWritable;
@@ -11,6 +12,13 @@ import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.rnn.RNNCoreAnnotations;
+import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
+import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.util.CoreMap;
 
 /**
  * Word count mapper.
@@ -31,6 +39,19 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
 
     @Override
     public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> oc, Reporter rprtr) throws IOException {
+
+        String textline = value.toString();
+        if (textline.substring(0,1).matches("W")) {
+            String tweet = text.substring(2);
+            String lang = UberLanguageDetector detector = UberLanguageDetector.getInstance().detectLang(tweet);
+
+            System.out.println(tweet);
+
+            if (lang.matches("en")) {
+                /* int sent = findSentiment(tweet); */
+            }
+        }
+
         StringTokenizer itr = new StringTokenizer(value.toString()
                 .replaceAll("[^a-zA-Z0-9#]", " "));
         int count = 0;
@@ -45,6 +66,31 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
             count++;
             if ((++count % 100) == 0) {
                 rprtr.setStatus("Finished processing " + count + " records");
+            }
+        }
+    }
+
+
+    private int findSentiment(String text) {
+        Properties props = new Properties();
+        props.setProperty("annotators", "tokenize, ssplit, parse, sentiment");
+        props.put("parse.model", parseModelPath);
+        props.put("sentiment.model", sentimentModelPath);
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+        int mainSentiment = 0;
+        if (text != null && text.length() > 0) {
+            int longest = 0;
+            Annotation annotation = pipeline.process(text);
+            for (CoreMap sentence : annotation
+                .get(CoreAnnotations.SentencesAnnotation.class)) {
+                Tree tree = sentence
+                .get(SentimentCoreAnnotations.AnnotatedTree.class);
+                int sentiment = RNNCoreAnnotations.getPredictedClass(tree);
+                String partText = sentence.toString();
+                if (partText.length() > longest) {
+                    mainSentiment = sentiment;
+                    longest = partText.length();
+                }
             }
         }
     }
