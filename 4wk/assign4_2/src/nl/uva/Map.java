@@ -36,7 +36,6 @@ import edu.stanford.nlp.util.CoreMap;
 public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable> {
 
     Log log = LogFactory.getLog(Map.class);
-    private final static IntWritable one = new IntWritable(1);
     private Text word = new Text();
     private Text sendword = new Text();
     private Path parseModelPath = new Path("lib/englishPCFG.ser.gz");
@@ -60,19 +59,28 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
     @Override
     public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> oc, Reporter rprtr) throws IOException {
 
-        int count = 0;
+        IntWritable sent;
 
         String tweet = value.toString();
+
+        /* Check for empty strings */
         if (!tweet.isEmpty()) {
+            /* Only process the actual tweet, not the date or the URL */
             if (tweet.substring(0,1).matches("W")) {
-                tweet = tweet.substring(2);
-                String lang = UberLanguageDetector.getInstance().detectLang(tweet);
+                /* Check if the tweet contains a hashtag */
+                if (tweet.contains("#\\w*[a-zA-Z]+\\w*")) {
+                    tweet = tweet.substring(2);
+                    String lang = UberLanguageDetector.getInstance().detectLang(tweet);
 
-                System.out.println(tweet);
+                    /* Check if language is English */
+                    if (lang.equals("en")) {
+                        sent = new IntWritable(findSentiment(tweet));
 
-                if (lang.equals("en")) {
-                    int sent = findSentiment(tweet);
-                    System.out.println("Ill find sentiment:\n"+ sent);
+                        /* Send the tweet and the sentiment value to reduce */
+                        sendword.set(tweet);
+                        oc.collect(sendword, sent);
+                        rprtr.incrCounter(Counters.INPUT_LINES, 1);
+                    }
                 }
             }
         }
@@ -99,8 +107,10 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
             Annotation annotation = pipeline.process(text);
 
             for (CoreMap sentence : annotation
-                    .get(CoreAnnotations.SentencesAnnotation.class)) {
-                Tree tree = sentence.get(SentimentCoreAnnotations.AnnotatedTree.class);
+                    .get(CoreAnnotations.SentencesAnnotation.class))
+            {
+                Tree tree = sentence
+                    .get(SentimentCoreAnnotations.AnnotatedTree.class);
                 int sentiment = RNNCoreAnnotations.getPredictedClass(tree);
                 String partText = sentence.toString();
 
