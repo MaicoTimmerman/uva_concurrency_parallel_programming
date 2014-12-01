@@ -1,8 +1,10 @@
 set datafile commentschars "#!%"
+
 set boxwidth 0.5
 set style line 2
 set style fill  solid border -1
 
+set grid y
 set yrange [0:*]
 
 
@@ -13,4 +15,4 @@ set ylabel "Speed compared to using single node"
 set terminal png size 1600,1000
 set output "speedup.png"
 
-plot 'data.dat' using 1:3:xtic(2) with boxes title "speed-up" linecolor rgb "#0000FF"
+plot 'data_speedup.dat' using 1:3:xtic(2) with boxes title "speed-up" linecolor rgb "#0000FF"
