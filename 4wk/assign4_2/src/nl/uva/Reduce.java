@@ -41,22 +41,23 @@ public class Reduce extends MapReduceBase
         double stddev = 0;
 
         /* Save the values to calculate the std deviation */
-        ArrayList<IntWritable> cache = new ArrayList<IntWritable>();
+        ArrayList<Integer> cache = new ArrayList<Integer>();
 
         /* Calculate the mean */
         while (itrtr.hasNext()) {
-            IntWritable value = itrtr.next();
-            sum += value.get();
+            int value = itrtr.next().get();
+            sum += value;
             count++;
             cache.add(value);
         }
         mean = (double)sum / count;
 
         /* Calculate the std deviation */
-        for (IntWritable value : cache) {
-            stddev = stddev + Math.pow(value.get() - mean, 2);
+        for (int value : cache) {
+            System.out.println("value: "+value);
+            stddev = stddev + Math.pow(value - mean, 2);
         }
-        stddev = stddev / mean;
+        stddev = stddev / count;
         stddev = Math.sqrt(stddev);
 
         /* Return the values */
