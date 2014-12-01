@@ -139,6 +139,8 @@ public class AssignmentMapreduce extends Configured implements Tool {
                 new Path(libFolder + "englishPCFG.ser").toUri(), conf);
         DistributedCache.addCacheFile(
                 new Path(libFolder + "sentiment.ser").toUri(), conf);
+        DistributedCache.addCacheFile(
+                new Path(dataset).toUri(), conf);
 
         /* Set the input path for the job */
         Path localPath = new Path(dataset);
