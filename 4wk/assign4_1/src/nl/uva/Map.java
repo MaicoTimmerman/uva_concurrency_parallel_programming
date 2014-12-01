@@ -43,28 +43,32 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
     throws IOException {
 
         int count = 0;
+        String tweet = value.toString();
 
-        /* Remove all the non-alphanumeric characters from the sentence */
-        StringTokenizer itr = new StringTokenizer(value.toString()
-                .replaceAll("[^a-zA-Z0-9#]", " "));
+        /* Don't process empty strings */
+        /* Only check the actual tweet for hashtags. */
+        if ((!tweet.isEmpty()) && (tweet.substring(0,1).matches("W"))) {
+            /* Remove all the non-alphanumeric characters from the sentence */
+            StringTokenizer itr = new StringTokenizer(tweet.replaceAll("[^a-zA-Z0-9#]", " "));
 
-        /* Loop through all the words */
-        while (itr.hasMoreTokens()) {
-            word.set(itr.nextToken());
+            /* Loop through all the words */
+            while (itr.hasMoreTokens()) {
+                word.set(itr.nextToken());
 
-            /* Test if a hashtag is not present in the current sentence. */
-            if (!(word.toString().toLowerCase().matches("#\\w*[a-zA-Z]+\\w*"))) {
-                continue;
-            }
+                /* Test if a hashtag is not present in the current sentence. */
+                if (!(word.toString().toLowerCase().matches("#\\w*[a-zA-Z]+\\w*"))) {
+                    continue;
+                }
 
-            /* Send the result to the Reducer */
-            sendword.set(word.toString().toLowerCase());
-            oc.collect(sendword, one);
-            rprtr.incrCounter(Counters.INPUT_LINES, 1);
+                /* Send the result to the Reducer */
+                sendword.set(word.toString().toLowerCase());
+                oc.collect(sendword, one);
+                rprtr.incrCounter(Counters.INPUT_LINES, 1);
 
-            count++;
-            if ((++count % 100) == 0) {
-                rprtr.setStatus("Finished processing " + count + " records");
+                count++;
+                if ((++count % 100) == 0) {
+                    rprtr.setStatus("Finished processing " + count + " records");
+                }
             }
         }
     }

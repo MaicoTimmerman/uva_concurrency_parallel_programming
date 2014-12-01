@@ -127,25 +127,25 @@ To accomplish these two tasks, the decision was made to split the program into
 two separate programs. One will find all the hashtags used and count them, the
 other will calculate the sentiment values.
 
-The first program maps single lines of text to the different nodes, and each
-line will be checked to see if it contains any hashtags. If it does, these
-hashtags will be returned to the reduce function as a key-value pair where the
-key is the hashtag and the value is always one (in case a hashtag is found
-multiple times in one line, it will just return multiple pairs, counting is done
-later). The reduce function will count the total amount of occurrences of each
-hashtag and output them (unsorted). This output is then piped to the `sort'
-program to sort them and find the most frequent hashtags.
+The first program maps single lines of text to the different nodes. For each
+line the program first determines if the line is the actual tweet, if not we do
+not process it. Then each line will be checked to see if it contains any
+hashtags and if it does, these hashtags will be returned to the reduce function as
+a key-value pair where the key is the hashtag and the value is always one (in
+case a hashtag is found multiple times in one line, it will just return multiple
+pairs, counting is done later). The reduce function will count the total amount
+of occurrences of each hashtag and output them (unsorted). This output is then
+piped to the `sort' program to sort them and find the most frequent hashtags.
 
-The second part or more accurately, the second program will also map individual
-lines of text from the file for processing. This time the line of text is first
-checked to be the actual tweet, as opposed to the date or the URL data
-corresponding to that tweet. If we find that it is in fact a line containing a
-tweet, we will determine if there is any hashtag in it, if not we do not process
-it any further. If it does contain a hashtag the language of that tweet is
-determined. If the language is English, finally the sentiment value is
-calculated. This value is then returned together with the tweet as a key-value
-pair to the reduce function. In de reduce function the mean and standard
-deviation is calculated and displayed.
+The second part or more accurately, the second program also maps individual
+lines of text from the file while discarding those that are not the actual
+tweets. When a line is determined to be a tweet, the program determines whether
+or not there is any hashtag in that tweet, if not we do not process it any
+further. If it however does contain a hashtag the language of that tweet is
+determined. If the language then turns out to be English, finally the sentiment
+value can be calculated. This value is then returned together with the hashtag
+found in the tweet as a key-value pair to the reduce function. In the reduce
+function the mean and standard deviation is calculated and outputted.
 
 \section{Results}
 
