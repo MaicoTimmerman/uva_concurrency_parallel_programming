@@ -112,13 +112,40 @@
 \section{Introduction}
 
 In this program MapReduce (Hadoop) is used to process large quantities of data.
-The data processed in this case are tweets and the goal of this program is to
-first of all count the different hashtags that are used in the tweets and determine
-which are the most popular ones. And second determine the sentiment score of a
-tweet.\\
+The data that will be processed in this case are tweets from 2009. These tweets
+will first be scanned for any hashtags to determine which hashtags were the most
+popular ones in that specific set of tweets. Then the tweets will be scanned
+once again but this time the aim is to determine the language so that the
+sentiment value can be determined in case the tweet is in English. Later the
+mean and standard deviation of the sentiment values will also be calculated.
+
 Hadoop is as stated above an implementation of MapReduce.
 
 \section{Method}
+
+To accomplish these two tasks, the decision was made to split the program into
+two separate programs. One will find all the hashtags used and count them, the
+other will calculate the sentiment values.
+
+The first program maps single lines of text to the different nodes, and each
+line will be checked to see if it contains any hashtags. If it does, these
+hashtags will be returned to the reduce function as a key-value pair where the
+key is the hashtag and the value is always one (in case a hashtag is found
+multiple times in one line, it will just return multiple pairs, counting is done
+later). The reduce function will count the total amount of occurrences of each
+hashtag and output them (unsorted). This output is then piped to the `sort'
+program to sort them and find the most frequent hashtags.
+
+The second part or more accurately, the second program will also map individual
+lines of text from the file for processing. This time the line of text is first
+checked to be the actual tweet, as opposed to the date or the URL data
+corresponding to that tweet. If we find that it is in fact a line containing a
+tweet, we will determine if there is any hashtag in it, if not we do not process
+it any further. If it does contain a hashtag the language of that tweet is
+determined. If the language is English, finally the sentiment value is
+calculated. This value is then returned together with the tweet as a key-value
+pair to the reduce function. In de reduce function the mean and standard
+deviation is calculated and displayed.
 
 
 \section{Results}
