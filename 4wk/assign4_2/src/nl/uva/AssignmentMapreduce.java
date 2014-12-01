@@ -37,14 +37,13 @@ public class AssignmentMapreduce extends Configured implements Tool {
 
     private static String dataset;
     private static String outputFolder;
-    private static String libFolder;
     private static Integer maxMap = -1;
     Log log = LogFactory.getLog(AssignmentMapreduce.class);
 
     public static void main(String[] args) {
         try {
             if (args == null
-                    || args.length < 4
+                    || args.length < 3
                     || args[0].equals("-help")
                     || args[0].equals("help")) {
                 printHelp();
@@ -53,9 +52,8 @@ public class AssignmentMapreduce extends Configured implements Tool {
 
             dataset = args[0];
             outputFolder = args[1];
-            libFolder = args[2];
-            if (args.length >= 4) {
-                maxMap = Integer.valueOf(args[3]);
+            if (args.length >= 3) {
+                maxMap = Integer.valueOf(args[2]);
             }
 
             /* Start the execution */
@@ -136,9 +134,9 @@ public class AssignmentMapreduce extends Configured implements Tool {
 
         /* Add the sentiment files to the distributed cache */
         DistributedCache.addCacheFile(
-                new Path(libFolder + "englishPCFG.ser").toUri(), conf);
+                new Path("englishPCFG.ser").toUri(), conf);
         DistributedCache.addCacheFile(
-                new Path(libFolder + "sentiment.ser").toUri(), conf);
+                new Path("sentiment.ser").toUri(), conf);
         DistributedCache.addCacheFile(
                 new Path(dataset).toUri(), conf);
 
