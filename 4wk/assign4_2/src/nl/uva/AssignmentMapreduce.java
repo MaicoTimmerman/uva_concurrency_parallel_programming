@@ -30,7 +30,11 @@ import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
+ * Configuration of the Hadoop job
+ *
  * @author S. Koulouzis
+ * @author R. Klusman (10675671)
+ * @author M. Timmerman (10542590)
  */
 public class AssignmentMapreduce extends Configured implements Tool {
 

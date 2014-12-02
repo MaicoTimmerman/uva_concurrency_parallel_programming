@@ -48,6 +48,7 @@ public class Map extends MapReduceBase
     @Override
     public void configure(JobConf conf) {
         try {
+            /* Acquire all the filepaths from the cached files */
             cachedFiles = DistributedCache.getLocalCacheFiles(conf);
             parseModelPath = cachedFiles[0];
             sentimentModelPath = cachedFiles[1];

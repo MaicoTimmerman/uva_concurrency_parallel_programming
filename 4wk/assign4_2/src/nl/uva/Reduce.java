@@ -21,11 +21,12 @@ import edu.stanford.nlp.util.CoreMap;
 
 /**
  * Self implemented Reduce class to calculate the average sentiment.
- * The standard deviation is also returned.
+ * Further calculation includes standard deviation and number of times
+ * the hashtag is present in the dataset.
  *
  * @author S. Koulouzis
- * @author M. Timmerman
- * @author R. Klusman
+ * @author R. Klusman (10675671)
+ * @author M. Timmerman (10542590)
  */
 public class Reduce extends MapReduceBase
     implements Reducer<Text, IntWritable, Text, Text> {
@@ -61,12 +62,9 @@ public class Reduce extends MapReduceBase
         stddev = Math.sqrt(stddev);
 
         /* Return the values */
-        /* output.collect( */
-        /*         new Text("\""+key.toString()), */
-        /*         new Text("("+count+")\" "+mean+" "+stddev) */
-        /*         ); */
         output.collect(
-                new Text(key.toString()),
-                new Text("" + count));
+                new Text("\""+key.toString()),
+                new Text("("+count+")\" "+mean+" "+stddev)
+                );
     }
 }
