@@ -30,9 +30,11 @@ import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
- * Word count mapper.
+ * Hashtag - sentiment mapper.
  *
  * @author S. Koulouzis
+ * @author R. Klusman (10675671)
+ * @author M. Timmerman (10542590)
  */
 public class Map extends MapReduceBase
     implements Mapper<LongWritable, Text, Text, IntWritable> {
@@ -60,7 +62,6 @@ public class Map extends MapReduceBase
     throws IOException {
 
         IntWritable sentiment;
-
         String tweet = value.toString();
 
         /* Check for empty strings */
@@ -79,10 +80,11 @@ public class Map extends MapReduceBase
                     continue;
                 }
 
+
+                /* Check if language is English, because sentiment can
+                 * only be calculated of English text. */
                 String lang = UberLanguageDetector.getInstance()
                     .detectLang(tweet);
-
-                /* Check if language is English */
                 if (lang.equals("en")) {
                     sentiment = new IntWritable(findSentiment(tweet));
 
@@ -95,7 +97,7 @@ public class Map extends MapReduceBase
 
 
     /**
-     * Find the sentiment of a tweet.
+     * Find the sentiment of a tweet, code given by UvA.
      *
      * @param text
      * @return

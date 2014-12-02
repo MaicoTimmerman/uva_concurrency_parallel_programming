@@ -49,6 +49,7 @@ public class AssignmentMapreduce extends Configured implements Tool {
                 System.exit(-1);
             }
 
+            /* Acquire all parameters of the run */
             dataset = args[0];
             outputFolder = args[1];
             if (args.length >= 3) {
@@ -131,7 +132,8 @@ public class AssignmentMapreduce extends Configured implements Tool {
          * files for the reducer */
         conf.setOutputFormat(TextOutputFormat.class);
 
-        /* Add the sentiment files to the distributed cache */
+        /* Add all files to the distributed cache, for easy reading from
+         * all the nodes in the cluster. */
         DistributedCache.addCacheFile(
                 new Path("englishPCFG.ser").toUri(), conf);
         DistributedCache.addCacheFile(
