@@ -2,7 +2,8 @@ set datafile commentschars "#!%"
 
 set boxwidth 0.5
 set style line 2
-set style fill  solid border -1
+set style fill solid border
+set style fill solid 0.3
 
 set grid y
 set yrange [0:*]

@@ -44,9 +44,9 @@
 
 % =================================== DOC INFO ===================================
 
-\newcommand{\titel}{MPI}
-\newcommand{\opdracht}{Assignment 3.2: Collective Communication}
-\newcommand{\docent}{Dr. C. Grelck}
+\newcommand{\titel}{MapReduce: Hadoop}
+\newcommand{\opdracht}{Assignment 4: Hashtag analysis}
+\newcommand{\docent}{Dr. A.S.Z. Belloum}
 \newcommand{\cursus}{Concurrency and Parallel Programming}
 \newcommand{\vakcode}{5062COPP6Y}
 \newcommand{\datum}{\today}
@@ -162,7 +162,7 @@ value and standard deviation, in addition to the speed up factor of the program
 when using multiple nodes compared to one node. \\
 
 \noindent\begin{tabularx}{\textwidth}{p{.22\textwidth} p{.15\textwidth} p{.25\textwidth} p{.25\textwidth}}
-    Hashtag & Occurences & Average Sentiment & Standard Deviation \\
+    Hashtag & Occurrences & Average Sentiment & Standard Deviation \\
     \hline
     \#iranelection  & 29 & 1.48 & 0.77 \\
     \#tcot          & 10 & 1.80 & 0.87 \\
@@ -176,7 +176,7 @@ when using multiple nodes compared to one node. \\
     \#forasarney    & 6  & 2.00 & 0.00 \\
 \end{tabularx}
 \captionof{table}{Top ten hashtags (from English tweets only) with their
-    occurences, \\ \hspace{2cm} average sentiment value and standard deviation of the sentiment
+    occurrences, \\ \hspace{2cm} average sentiment value and standard deviation of the sentiment
 value.}
 
 \begin{center}
@@ -193,11 +193,11 @@ compared to one node.}
 
 \section{Conclusion}
 
-As can be seen in the graphs presented above, the speed-up is not that
-significant even when using eight nodes. This can be explained by the fact that
+As can be seen in the graphs presented above, the speed-up is not as high as
+expected when using eight nodes. This can be explained by the fact that
 many other tasks were running at the same time on the system while our program
 was running. Another explanation is the fact that our dataset is not large
-enough to get the maximum speed-up from hadoop.
+enough to get the maximum speed-up from Hadoop.
 
 
 % =================================== REFERENCES ===================================
