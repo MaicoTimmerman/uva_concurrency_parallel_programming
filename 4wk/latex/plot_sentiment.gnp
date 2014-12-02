@@ -7,7 +7,7 @@ set bars front
 set grid y
 set yrange [0:3.5]
 
-set title "Average sentiment of most used #hashtags (number of occurrences)"
+set title "Average sentiment of most used #hashtags\n(with number of occurrences)"
 set ylabel "Average sentiment, with standard deviation"
 set xtics rotate by 45 right
 
