@@ -111,7 +111,12 @@
 
 \section{Introduction}
 
-Hadoop is as stated above an implementation of MapReduce.
+Hadoop is an implementation of MapReduce, that simplifies the usage of MapReduce
+greatly. Hadoop requires the user to write his own Map and Reduction function
+and deals with the rest of the configuration itself. Hadoop has a built-in
+distributed file system,  Hadoop Distributed File System (HDFS).  The HDFS is
+accessible from all nodes running Hadoop, making read-write operations very
+convenient.
 
 In this program Hadoop is used to process large quantities of data. The data
 that will be processed in this case are a collection of tweets from 2009. These
@@ -121,6 +126,7 @@ containing a hashtag the language will be determined. If the language happens to
 be English, the sentiment value is calculated and returned to the reduce
 function. Finally the mean and standard deviation of the sentiment values will
 also be calculated.
+
 
 \section{Method}
 
@@ -153,16 +159,16 @@ belonging to a certain tweet/hashtag.}
 \noindent\begin{tabularx}{\textwidth}{p{.22\textwidth} p{.15\textwidth} p{.25\textwidth} p{.25\textwidth}}
     Hashtag & Occurences & Average Sentiment & Standard Deviation \\
     \hline
-    \#iranelection  & 29 &  &  \\
-    \#tcot          & 10 &  &  \\
-    \#followadd     & 9  &  &  \\
-    \#spymaster     & 8  &  &  \\
-    \#140mafia      & 8  &  &  \\
-    \#neda          & 7  &  &  \\
-    \#fb            & 7  &  &  \\
-    \#jobs          & 6  &  &  \\
-    \#iran          & 6  &  &  \\
-    \#forasarney    & 6  &  &  \\
+    \#iranelection  & 29 & 1.48 & 0.77 \\
+    \#tcot          & 10 & 1.80 & 0.87 \\
+    \#followadd     & 9  & 2.00 & 0.00 \\
+    \#spymaster     & 8  & 1.50 & 0.87 \\
+    \#140mafia      & 8  & 2.00 & 1.00 \\
+    \#neda          & 7  & 1.57 & 0.73 \\
+    \#fb            & 7  & 2.00 & 0.93 \\
+    \#jobs          & 6  & 2.50 & 0.50 \\
+    \#iran          & 6  & 1.33 & 0.75 \\
+    \#forasarney    & 6  & 2.00 & 0.00 \\
 \end{tabularx}
 \captionof{table}{Top ten hashtags (from English tweets only) with their
     occurences, \\ \hspace{2cm} average sentiment value and standard deviation of the sentiment
