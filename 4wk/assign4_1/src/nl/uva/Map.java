@@ -49,7 +49,7 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
         /* Only check the actual tweet for hashtags. */
         if ((!tweet.isEmpty()) && (tweet.substring(0,1).matches("W"))) {
             /* Remove all the non-alphanumeric characters from the sentence */
-            StringTokenizer itr = new StringTokenizer(tweet.replaceAll("[^a-zA-Z0-9#]", " "));
+            StringTokenizer itr = new StringTokenizer(tweet.replaceAll("[^a-zA-Z0-9#_]", " "));
 
             /* Loop through all the words */
             while (itr.hasMoreTokens()) {

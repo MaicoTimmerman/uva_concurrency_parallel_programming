@@ -1,18 +1,17 @@
-set datafile commentschars "#!%"
-
-set boxwidth 0.5
-set style line 2
-set style fill solid border -1
+set style data histogram
+set style fill solid border
+set style histogram errorbars linewidth 3 gap 1
+set style fill solid 0.3
+set bars front
 
 set grid y
-set yrange [0:*]
+set yrange [0:3.5]
 
 set title "Average sentiment of most used #hashtags"
-set xlabel "Hashtag"
 set ylabel "Average sentiment, with standard deviation"
-set xtics rotate
+set xtics rotate by 45 right
 
 set terminal png size 1600,1000
 set output "sentiment.png"
 
-plot 'data_speedup.dat' using 1:3:xtic(2) with boxes title "Average sentiment" linecolor rgb "#0000FF"
+plot 'data_sentiment.dat' using 2:3:xtic(1) title "Average sentiment" linecolor rgb "#0000FF"
