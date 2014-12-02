@@ -111,58 +111,62 @@
 
 \section{Introduction}
 
-In this program MapReduce (Hadoop) is used to process large quantities of data.
-The data that will be processed in this case are tweets from 2009. These tweets
-will first be scanned for any hashtags to determine which hashtags were the most
-popular ones in that specific set of tweets. Then the tweets will be scanned
-once again but this time the aim is to determine the language so that the
-sentiment value can be determined in case the tweet is in English. Later the
-mean and standard deviation of the sentiment values will also be calculated.
-
 Hadoop is as stated above an implementation of MapReduce.
+
+In this program Hadoop is used to process large quantities of data. The data
+that will be processed in this case are a collection of tweets from 2009. These
+tweets will first be scanned for any hashtags to determine which hashtags were
+the most popular ones in this set of tweets. Then for each of the tweets
+containing a hashtag the language will be determined. If the language happens to
+be English, the sentiment value is calculated and returned to the reduce
+function. Finally the mean and standard deviation of the sentiment values will
+also be calculated.
 
 \section{Method}
 
-To accomplish these two tasks, the decision was made to split the program into
-two separate programs. One will find all the hashtags used and count them, the
-other will calculate the sentiment values.
+The first thing the program has to do is map the data to the available nodes.
+In this case each node gets one line of text from the file that is being read.
+The first thing to do when this line of text is received is to check if this is
+the line containing the actual tweet, and not the date or URL belonging to a
+tweet. If the line is found to be a tweet, the second step is to determine if
+this tweet contains any hashtags, and what they are. If there are no hashtags at
+all in the tweet, it will be discarded. If there is however a hashtag in the
+tweet, we will then determine the language of the tweet. If the language is
+found to be English, the sentiment value can finally be calculated. This value
+is then returned to the reduce function together with the hashtag(s) that were
+in that tweet in a so called key-value pair, where the key is the hashtag and
+the value the sentiment (in case there were multiple hashtags in a single tweet,
+each one of them is sent in a separate key-value pair).
+The reduce function will then determine the mean and standard deviation of the
+sentiment value for a specific hashtag and output these.
+The image below illustrates the various steps taken in finding the sentiment
+value for a specific hashtag/tweet.
 
-The first program maps single lines of text to the different nodes. For each
-line the program first determines if the line is the actual tweet, if not we do
-not process it. Then each line will be checked to see if it contains any
-hashtags and if it does, these hashtags will be returned to the reduce function as
-a key-value pair where the key is the hashtag and the value is always one (in
-case a hashtag is found multiple times in one line, it will just return multiple
-pairs, counting is done later). The reduce function will count the total amount
-of occurrences of each hashtag and output them (unsorted). This output is then
-piped to the `sort' program to sort them and find the most frequent hashtags.
-
-The second part or more accurately, the second program also maps individual
-lines of text from the file while discarding those that are not the actual
-tweets. When a line is determined to be a tweet, the program determines whether
-or not there is any hashtag in that tweet, if not we do not process it any
-further. If it however does contain a hashtag the language of that tweet is
-determined. If the language then turns out to be English, finally the sentiment
-value can be calculated. This value is then returned together with the hashtag
-found in the tweet as a key-value pair to the reduce function. In the reduce
-function the mean and standard deviation is calculated and outputted.
+\begin{center}
+    \includegraphics[width=\textwidth]{steps}
+\end{center}
+\captionof{figure}{Steps taken and checks done in finding the sentiment value
+belonging to a certain tweet/hashtag.}
 
 \section{Results}
 
 \noindent\begin{tabularx}{\textwidth}{p{.22\textwidth} p{.15\textwidth} p{.25\textwidth} p{.25\textwidth}}
     Hashtag & Occurences & Average Sentiment & Standard Deviation \\
     \hline
-    \#iranelection  & 32 &  &  \\
-    \#honduras      & 14 &  &  \\
-    \#forasarney    & 12 &  &  \\
+    \#iranelection  & 29 &  &  \\
     \#tcot          & 10 &  &  \\
-    \#xixicoco      & 9  &  &  \\
-    \#xixicoc       & 9  &  &  \\
-    \#neda          & 9  &  &  \\
     \#followadd     & 9  &  &  \\
-    \#140mafia      & 9  &  &  \\
     \#spymaster     & 8  &  &  \\
+    \#140mafia      & 8  &  &  \\
+    \#neda          & 7  &  &  \\
+    \#fb            & 7  &  &  \\
+    \#jobs          & 6  &  &  \\
+    \#iran          & 6  &  &  \\
+    \#forasarney    & 6  &  &  \\
 \end{tabularx}
+\captionof{table}{Top ten hashtags (from English tweets only) with their
+    occurences, \\ \hspace{2cm} average sentiment value and standard deviation of the sentiment
+value.}
 
 \section{Conclusion}
 
