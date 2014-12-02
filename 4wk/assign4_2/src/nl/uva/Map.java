@@ -35,19 +35,13 @@ import edu.stanford.nlp.util.CoreMap;
  * @author S. Koulouzis
  */
 public class Map extends MapReduceBase
-    implements Mapper<LongWritable, Text, IntWritable, IntWritable> {
+    implements Mapper<LongWritable, Text, Text, IntWritable> {
 
     Log log = LogFactory.getLog(Map.class);
     private Text word = new Text();
-    private Text sendword = new Text();
     private Path[] cachedFiles;
     private Path parseModelPath;
     private Path sentimentModelPath;
-
-    static enum Counters {
-
-        INPUT_LINES
-    }
 
     @Override
     public void configure(JobConf conf) {
@@ -62,7 +56,7 @@ public class Map extends MapReduceBase
 
     @Override
     public void map(LongWritable key, Text value,
-            OutputCollector<IntWritable, IntWritable> oc, Reporter rprtr)
+            OutputCollector<Text, IntWritable> oc, Reporter rprtr)
     throws IOException {
 
         IntWritable sentiment;
@@ -72,9 +66,19 @@ public class Map extends MapReduceBase
         /* Check for empty strings */
         /* Only process the actual tweet, not the date or the URL */
         if ((!tweet.isEmpty()) && (tweet.substring(0,1).matches("W"))) {
-            /* Check if the tweet contains a hashtag */
-            if (tweet.matches("(?s).*#\\w*[a-zA-Z]+\\w*.*")) {
-                tweet = tweet.substring(2);
+
+            /* Remove all the non-alphanumeric characters from the sentence */
+            StringTokenizer itr = new StringTokenizer(tweet.replaceAll("[^a-zA-Z0-9#_]", " "));
+
+            /* Loop through all the words */
+            while (itr.hasMoreTokens()) {
+                word.set(itr.nextToken());
+
+                /* Test if a hashtag is not present in the current sentence. */
+                if (!(word.toString().toLowerCase().matches("#\\w*[a-zA-Z]+\\w*"))) {
+                    continue;
+                }
+
                 String lang = UberLanguageDetector.getInstance()
                     .detectLang(tweet);
 
@@ -83,8 +87,7 @@ public class Map extends MapReduceBase
                     sentiment = new IntWritable(findSentiment(tweet));
 
                     /* Send the tweet and the sentiment value to reduce */
-                    oc.collect(new IntWritable(42), sentiment);
-                    rprtr.incrCounter(Counters.INPUT_LINES, 1);
+                    oc.collect(new Text(word.toString().toLowerCase()), sentiment);
                 }
             }
         }

@@ -12,7 +12,6 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.filecache.DistributedCache;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
@@ -112,7 +111,7 @@ public class AssignmentMapreduce extends Configured implements Tool {
 
         /* Set the Maper and formats */
         conf.setMapperClass(nl.uva.Map.class);
-        conf.setMapOutputKeyClass(IntWritable.class);
+        conf.setMapOutputKeyClass(Text.class);
         conf.setMapOutputValueClass(IntWritable.class);
 
         /* Set Input Format Format to apply to the input
@@ -126,7 +125,7 @@ public class AssignmentMapreduce extends Configured implements Tool {
          * setOutputKeyClass() and setOutputValueClass()
          * It is the class for the value and output key. */
         conf.setOutputKeyClass(Text.class);
-        conf.setOutputValueClass(DoubleWritable.class);
+        conf.setOutputValueClass(Text.class);
 
         /* Set output Format Format to apply to the output
          * files for the reducer */
