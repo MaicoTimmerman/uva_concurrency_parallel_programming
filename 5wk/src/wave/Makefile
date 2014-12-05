@@ -27,7 +27,7 @@ $(PROG): $(CU_OBJECTS) $(CC_OBJECTS)
 ptx: $(CU_PTX)
 
 run: $(PROG)
-	prun -v -np 1 -native '-l gpu=GTX480' ./$(PROG)
+	prun -v -np 1 -native '-l gpu=GTX480' $(PROG) 2048 1000
 
 clean:
 	rm -f *.o $(PROG) *~
