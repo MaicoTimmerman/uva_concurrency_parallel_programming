@@ -111,9 +111,21 @@
 
 \section{Introduction}
 
+In this assignment the goal is to determine the maximum value in an array of
+floats in fast way using CUDA to parallelise the task. Since we are dealing with
+a large amount of simple tasks (comparing two values and saving the larger one)
+CUDA should have excellent performance when used for this task.
 
 \section{Method}
 
+In the introduction we spoke of comparing two values, this is of course
+necessary to determine a maximum value. Our implementation will compare the
+value in index $i$ to the value at index $n-i$ (where $n$ is the size of the
+array) and write the largest of the two values at index $i$. After completing
+a cycle the latter half of the array is no longer relevant, so we will then
+perform the same task on the first half of the array. This will continue until
+one value is left over which is then guaranteed to be the largest value in the
+array.
 
 \section{Results}
 
