@@ -1,3 +1,4 @@
+PROG = vector-add
 NVCC = nvcc
 CC = g++
 #CU_FLAGS= -O3 -g -deviceemu
@@ -20,10 +21,13 @@ CC_OBJECTS = $(CC_SOURCES:%.cc=%.o)
 %.ptx: %.cu
 	$(NVCC) $(CU_FLAGS) --ptx $< -o $@
 
-vector-add: $(CU_OBJECTS) $(CC_OBJECTS)
+$(PROG): $(CU_OBJECTS) $(CC_OBJECTS)
 	$(NVCC) $^ -o $@
 
 ptx: $(CU_PTX)
 
+run: $(PROG)
+	prun -v -np 1 -native '-l gpu=GTX480' $(PROG) 2048 1000
+
 clean:
-	rm -f *.o vector-add *~
+	rm -f *.o $(PROG) *~
