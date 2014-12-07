@@ -125,6 +125,20 @@ next value for that particular amplitude point.
 
 \section{Results}
 
+In the results below it can be seen that CUDA has a significantly higher
+performance than the previous implementations of this program. This can be
+explained partially by realising that CUDA has many more ALU's to its disposal
+than any of the previous programs, which only used a maximum of eight parallel
+threads to execute the program. CUDA on the other hand has access to over a
+million total hardware threads, so it comes as no surprise that CUDA is faster
+when computing this highly parallelisable wave simulation.
+
+\begin{center}
+    \includegraphics{speedup}
+\end{center}
+\captionof{figure}{Comparison of runtime of 10000 time steps in a wave of 100000
+    amplitude points for CUDA, OpenMP (8 threads with dynamic scheduling) and
+    pThreads (8 threads).}
 
 
 \section{Conclusion}
