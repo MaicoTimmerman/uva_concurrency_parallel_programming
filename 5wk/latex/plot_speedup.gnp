@@ -8,7 +8,6 @@ set style fill solid 0.3
 set grid y
 set yrange [0:*]
 
-
 set title "Speed up of CUDA compared to previous implementations of the Wave Simulation"
 set xlabel "Number of Amplitude Points"
 set ylabel "Execution time (ms)"
