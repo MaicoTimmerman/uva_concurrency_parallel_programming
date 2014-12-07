@@ -65,11 +65,10 @@ __global__ void reduce_max_kernel(float* input_d, float* partial_result_d)
 }
 
 
-void reduce_max_cuda(int i_max, float *list_h, float *result_h)
+void reduce_max_cuda(int i_max, float *list_h, const int block_size, float *result_h)
 {
     float *list_d = NULL;
     float *partial_result_d = NULL;
-    const int block_size = 1024;
 
     /* number of blocks is equal to:
      * Integer division + extra block for remainder */
@@ -114,20 +113,23 @@ void reduce_max_cuda(int i_max, float *list_h, float *result_h)
     // print the time the kernel invocation took, without the copies!
     float elapsedTime;
     cudaEventElapsedTime(&elapsedTime, start, stop);
-    cout << "kernel invocation took " << elapsedTime << " milliseconds" << endl;
+    cout << elapsedTime << endl;
 }
 
 
 int main(int argc, char* argv[])
 {
     int i_max = 0;
+    int block_size;
     float *result = new float[1]();
+    timer maxTimer("Max Timer:");
 
     srand(time(NULL));
 
-    if (argc < 2) {
-        printf("Usage: %s i_max\n", argv[0]);
+    if (argc < 3) {
+        printf("Usage: %s i_max b_s\n", argv[0]);
         printf(" - i_max: number of discrete points in the list, should be >2\n");
+        printf(" - b_s: block size, power of 2\n");
         return EXIT_FAILURE;
     }
 
@@ -142,6 +144,8 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
+    block_size = atoi(argv[2]);
+
 
     // make a list of floats
     float list[i_max];
@@ -149,9 +153,13 @@ int main(int argc, char* argv[])
         list[i] = (float)rand()/((float)RAND_MAX/FLT_MAX);
     }
 
-    reduce_max_cuda(i_max, list, result);
-    cout << "max seq:" << max_array(list, i_max) << endl;
-    cout << "max cuda:" << *result << endl;
+    maxTimer.start();
+    /* reduce_max_cuda(i_max, list, block_size, result); */
+    *result = max_array(list, i_max);
+    maxTimer.stop();
+    /* cout << "max seq:" << max_array(list, i_max) << endl; */
+    /* cout << "max cuda:" << *result << endl; */
+    cout << maxTimer << endl;
 
     return EXIT_SUCCESS;
 }

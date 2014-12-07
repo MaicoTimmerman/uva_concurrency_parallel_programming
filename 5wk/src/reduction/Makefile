@@ -2,8 +2,8 @@ PROG = reduce-max
 NVCC = nvcc
 CC = g++
 #CU_FLAGS= -O3 -g -deviceemu
-CU_FLAGS = -O3 -g --ptxas-options=-v -arch compute_20 -code sm_20
-CC_FLAGS = -O3 -m64 -Wall
+CU_FLAGS = -g --ptxas-options=-v -arch compute_20 -code sm_20
+CC_FLAGS = -m64 -Wall
 
 CU_SOURCES = reduce-max.cu
 CC_SOURCES = timer.cc
@@ -27,7 +27,7 @@ $(PROG): $(CU_OBJECTS) $(CC_OBJECTS)
 ptx: $(CU_PTX)
 
 run: $(PROG)
-	prun -v -np 1 -native '-l gpu=GTX480' ./$(PROG) 2048
+	prun -np 1 -native '-l gpu=GTX480' ./$(PROG) 1048576 1024
 
 clean:
 	rm -f *.o $(PROG) *~
