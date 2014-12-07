@@ -36,9 +36,19 @@ float max_array(float a[], int num_elements)
     return max;
 }
 
-__global__ void reduce_max_kernel(float* input_d, float* partial_result_d)
+__global__ void reduce_max_kernel(float* input_d, float* partial_result_d, int i_max)
 {
+    extern __shared__ float shared_input_d[];
+
     unsigned global_tid = blockIdx.x * blockDim.x + threadIdx.x;
+
+    /* load input into __shared__ memory */
+    if (global_tid < i_max) {
+        shared_input_d[threadIdx.x] = input_d[global_tid];
+    } else {
+        shared_input_d[threadIdx.x] = 0;
+    }
+    __syncthreads();
 
     /* Let every thread compare a number of the first half of the block to
        a number in the second half of the block. */
@@ -49,9 +59,9 @@ __global__ void reduce_max_kernel(float* input_d, float* partial_result_d)
         if (threadIdx.x < offset) {
 
             /* Get the maximum value of both cells */
-            input_d[global_tid] =
-                ((input_d[global_tid] < input_d[global_tid + offset]) ?
-                 input_d[global_tid + offset] : input_d[global_tid]);
+            shared_input_d[global_tid] =
+                ((shared_input_d[global_tid] < shared_input_d[global_tid + offset]) ?
+                 shared_input_d[global_tid + offset] : shared_input_d[global_tid]);
         }
 
         /* Wait for all threads to update their data, so the next iteration
@@ -60,7 +70,7 @@ __global__ void reduce_max_kernel(float* input_d, float* partial_result_d)
     }
 
     if (threadIdx.x == 0) {
-        partial_result_d[blockIdx.x] = input_d[global_tid];
+        partial_result_d[blockIdx.x] = shared_input_d[global_tid];
     }
 }
 
@@ -89,14 +99,14 @@ void reduce_max_cuda(int i_max, float *list_h, const int block_size, float *resu
 
     /* launch one kernel to compute, per-block, a partial maximum */
     reduce_max_kernel<<<max_blocks, block_size, sizeof(float) * block_size>>>
-        (list_d, partial_result_d);
+        (list_d, partial_result_d, i_max);
 
     // check whether the kernel invocation was successful
     checkCudaCall(cudaGetLastError());
 
     /* launch a single block to compute the maximum of the partial maximums */
     reduce_max_kernel<<<1, max_blocks, max_blocks * sizeof(float)>>>
-        (partial_result_d, partial_result_d);
+        (partial_result_d, partial_result_d, i_max);
 
     /* check whether the kernel invocation was successful */
     checkCudaCall(cudaGetLastError());
@@ -154,7 +164,7 @@ int main(int argc, char* argv[])
     }
 
     maxTimer.start();
-    /* reduce_max_cuda(i_max, list, block_size, result); */
+    reduce_max_cuda(i_max, list, block_size, result);
     *result = max_array(list, i_max);
     maxTimer.stop();
     /* cout << "max seq:" << max_array(list, i_max) << endl; */
