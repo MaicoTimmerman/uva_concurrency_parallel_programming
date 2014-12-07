@@ -36,8 +36,7 @@ float max_array(float a[], int num_elements)
     return max;
 }
 
-__global__ void reduce_max_kernel(float* input_d, float* partial_result_d,
-        unsigned int i_max)
+__global__ void reduce_max_kernel(float* input_d, float* partial_result_d)
 {
     unsigned global_tid = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -47,7 +46,7 @@ __global__ void reduce_max_kernel(float* input_d, float* partial_result_d,
 
         /* If the offset is smaller as the threadId, then the thread is not
            needed during computation */
-        if (global_tid < offset) {
+        if (threadIdx.x < offset) {
 
             /* Get the maximum value of both cells */
             input_d[global_tid] =
@@ -70,7 +69,7 @@ void reduce_max_cuda(int i_max, float *list_h, float *result_h)
 {
     float *list_d = NULL;
     float *partial_result_d = NULL;
-    const int block_size = 512;
+    const int block_size = 1024;
 
     /* number of blocks is equal to:
      * Integer division + extra block for remainder */
@@ -91,14 +90,14 @@ void reduce_max_cuda(int i_max, float *list_h, float *result_h)
 
     /* launch one kernel to compute, per-block, a partial maximum */
     reduce_max_kernel<<<max_blocks, block_size, sizeof(float) * block_size>>>
-        (list_d, partial_result_d, i_max);
+        (list_d, partial_result_d);
 
     // check whether the kernel invocation was successful
     checkCudaCall(cudaGetLastError());
 
     /* launch a single block to compute the maximum of the partial maximums */
     reduce_max_kernel<<<1, max_blocks, max_blocks * sizeof(float)>>>
-        (partial_result_d, partial_result_d, i_max);
+        (partial_result_d, partial_result_d);
 
     /* check whether the kernel invocation was successful */
     checkCudaCall(cudaGetLastError());
@@ -106,11 +105,8 @@ void reduce_max_cuda(int i_max, float *list_h, float *result_h)
     /* Stop the timing */
     cudaEventRecord(stop, 0);
 
-    cout << "writing to result after: " << *result_h << endl;
-
     // copy result back
     checkCudaCall(cudaMemcpy(result_h, partial_result_d, sizeof(float), cudaMemcpyDeviceToHost));
-    cout << "writing to result before: " << *result_h << endl;
 
     checkCudaCall(cudaFree(list_d));
     checkCudaCall(cudaFree(partial_result_d));
@@ -126,6 +122,8 @@ int main(int argc, char* argv[])
 {
     int i_max = 0;
     float *result = new float[1]();
+
+    srand(time(NULL));
 
     if (argc < 2) {
         printf("Usage: %s i_max\n", argv[0]);
