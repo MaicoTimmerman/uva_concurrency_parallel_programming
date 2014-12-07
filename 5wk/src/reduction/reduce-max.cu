@@ -66,7 +66,7 @@ __global__ void reduce_max_kernel(float* input_d, float* partial_result_d,
 }
 
 
-void reduce_max_cuda(int i_max, float *list_h, float result)
+void reduce_max_cuda(int i_max, float *list_h, float *result_h)
 {
     float *list_d = NULL;
     float *partial_result_d = NULL;
@@ -106,8 +106,11 @@ void reduce_max_cuda(int i_max, float *list_h, float result)
     /* Stop the timing */
     cudaEventRecord(stop, 0);
 
+    cout << "writing to result after: " << *result_h << endl;
+
     // copy result back
-    checkCudaCall(cudaMemcpy(&result, partial_result_d, sizeof(float), cudaMemcpyDeviceToHost));
+    checkCudaCall(cudaMemcpy(result_h, partial_result_d, sizeof(float), cudaMemcpyDeviceToHost));
+    cout << "writing to result before: " << *result_h << endl;
 
     checkCudaCall(cudaFree(list_d));
     checkCudaCall(cudaFree(partial_result_d));
@@ -122,9 +125,9 @@ void reduce_max_cuda(int i_max, float *list_h, float result)
 int main(int argc, char* argv[])
 {
     int i_max = 0;
-    int result = 0;
+    float *result = new float[1]();
 
-    if (argc < 3) {
+    if (argc < 2) {
         printf("Usage: %s i_max\n", argv[0]);
         printf(" - i_max: number of discrete points in the list, should be >2\n");
         return EXIT_FAILURE;
@@ -146,12 +149,11 @@ int main(int argc, char* argv[])
     float list[i_max];
     for (int i = 0; i < i_max; i++){
         list[i] = (float)rand()/((float)RAND_MAX/FLT_MAX);
-        printf("List[%d]: %f\n", i, list[i]);
     }
 
     reduce_max_cuda(i_max, list, result);
     cout << "max seq:" << max_array(list, i_max) << endl;
-    cout << "max cuda:" << result << endl;
+    cout << "max cuda:" << *result << endl;
 
     return EXIT_SUCCESS;
 }
