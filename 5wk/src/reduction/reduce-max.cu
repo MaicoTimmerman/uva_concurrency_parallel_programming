@@ -165,10 +165,10 @@ int main(int argc, char* argv[])
 
     maxTimer.start();
     reduce_max_cuda(i_max, list, block_size, result);
-    /* *result = max_array(list, i_max); */
+    *result = max_array(list, i_max);
     maxTimer.stop();
-    /* cout << "max seq:" << max_array(list, i_max) << endl; */
-    /* cout << "max cuda:" << *result << endl; */
+    cout << "max seq:" << max_array(list, i_max) << endl;
+    cout << "max cuda:" << *result << endl;
     cout << maxTimer << endl;
 
     return EXIT_SUCCESS;
