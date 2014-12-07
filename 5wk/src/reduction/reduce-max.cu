@@ -59,9 +59,9 @@ __global__ void reduce_max_kernel(float* input_d, float* partial_result_d, int i
         if (threadIdx.x < offset) {
 
             /* Get the maximum value of both cells */
-            shared_input_d[global_tid] =
-                ((shared_input_d[global_tid] < shared_input_d[global_tid + offset]) ?
-                 shared_input_d[global_tid + offset] : shared_input_d[global_tid]);
+            shared_input_d[threadIdx.x] =
+                ((shared_input_d[threadIdx.x] < shared_input_d[threadIdx.x + offset]) ?
+                 shared_input_d[threadIdx.x + offset] : shared_input_d[threadIdx.x]);
         }
 
         /* Wait for all threads to update their data, so the next iteration
@@ -70,7 +70,7 @@ __global__ void reduce_max_kernel(float* input_d, float* partial_result_d, int i
     }
 
     if (threadIdx.x == 0) {
-        partial_result_d[blockIdx.x] = shared_input_d[global_tid];
+        partial_result_d[blockIdx.x] = shared_input_d[threadIdx.x];
     }
 }
 
@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
 
     maxTimer.start();
     reduce_max_cuda(i_max, list, block_size, result);
-    *result = max_array(list, i_max);
+    /* *result = max_array(list, i_max); */
     maxTimer.stop();
     /* cout << "max seq:" << max_array(list, i_max) << endl; */
     /* cout << "max cuda:" << *result << endl; */
