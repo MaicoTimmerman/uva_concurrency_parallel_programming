@@ -110,6 +110,7 @@
 % =================================== MAIN TEXT ===================================
 
 \section{Introduction}
+
 For this assignment CUDA is used to simulate a wave equation. Indeed, this is a
 program we have seen before, our aim then in this implementation will be to try
 and increase the performance of this program by using CUDA.
@@ -121,11 +122,12 @@ ALU's.
 
 The implementation of this program is fairly straightforward, we simply spread
 the amplitude points over the available ALU's, each of which will calculate the
-next value for that particular amplitude point.
+next value for that particular amplitude point. So we only need one iteration
+per ALU per time step to compute the wave.
 
 \section{Results}
 
-In the results below it can be seen that CUDA has a significantly higher
+In the results below it can be seen that CUDA has a significantly better
 performance than the previous implementations of this program. This can be
 explained partially by realising that CUDA has many more ALU's to its disposal
 than any of the previous programs, which only used a maximum of eight parallel
@@ -134,14 +136,37 @@ million total hardware threads, so it comes as no surprise that CUDA is faster
 when computing this highly parallelisable wave simulation.
 
 \begin{center}
-    \includegraphics{speedup}
+    \includegraphics[width=\textwidth]{speedup01mil}
 \end{center}
-\captionof{figure}{Comparison of runtime of 10000 time steps in a wave of 100000
+\captionof{figure}{Comparison of execution times (in seconds) of 10000 time steps in a wave of 100000
     amplitude points for CUDA, OpenMP (8 threads with dynamic scheduling) and
     pThreads (8 threads).}
 
+\begin{center}
+    \includegraphics[width=\textwidth]{speedup1mil}
+\end{center}
+\captionof{figure}{Comparison of runtimes of 10000 time steps in a wave of 1
+    million amplitude points for CUDA, OpenMP (8 threads with dynamic
+    scheduling) and pThreads (8 threads).}
+
+\begin{center}
+    \includegraphics[width=\textwidth]{speedup10mil}
+\end{center}
+\captionof{figure}{Comparison of runtimes of 10000 time steps in a wave of 10
+    million amplitude points for CUDA, OpenMP (8 threads with dynamic
+    scheduling) and pThreads (8 threads).}
 
 \section{Conclusion}
+
+As stated above, it comes as no surprise that using CUDA is many times faster
+than using any of the previous parallel programming options. CUDA of course has
+access to a great many more ALU's than the other implementations do. Though when
+comparing the execution in CUDA for 0.1 million amplitude points to 10 million
+points, we see that CUDA does need significantly more time to compute those 10
+million points, even though it still only needs one iteration (per time step) to
+complete the simulation, due to the amount of cores being sufficient to
+accommodate all the 10 million points. This extra overhead is then most likely
+created by the extra time it takes to transport all this data.
 
 
 % =================================== REFERENCES ===================================

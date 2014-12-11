@@ -11,7 +11,7 @@ set yrange [0:*]
 
 set title "Speed up of CUDA compared to previous implementations of the Wave Simulation"
 set xlabel "Number of Amplitude Points"
-set ylabel "Execution time (ms)"
+set ylabel "Execution time (s)"
 
 set terminal png size 800,500
 set output "speedup01mil.png"

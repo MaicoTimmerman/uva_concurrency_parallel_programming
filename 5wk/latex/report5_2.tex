@@ -129,8 +129,41 @@ array.
 
 \section{Results}
 
+The results below illustrate the difference in performance when running the
+reduction program with shared memory versus non-shared memory. The performance
+with shared memory is as expected better than that of the non-shared memory
+counterpart. We also compared the sequential execution of the program using
+shared memory with non-shared memory and here it turns out to make no
+difference.
+Another interesting fact we see in this graph is that the sequential execution
+is much faster than the GPGPU execution.
+
+\begin{center}
+    \includegraphics[width=\textwidth]{reduce-max}
+\end{center}
+\captionof{figure}{Comparison of shared memory execution to non-shared memory
+execution for both CUDA and Sequential execution of the reduction program
+operating on an array of $2*1024^2$ floats.}
 
 \section{Conclusion}
+
+We will start by discussing the more straightforward result that we see in the
+graph above; shared memory execution increases performance for the CUDA
+implementation. This is easily explained by the overhead created by
+reading remote memory locations. Since a lot of data has to be exchanged (we
+need both the neighbours' values to calculate the new value for an amplitude
+point) the overhead created by accessing remote memory is much larger overall
+than the overhead created by having a shared memory system.
+For sequential execution this makes no difference since it there is only one
+instance running so no remote accesses have to take place, it only needs to
+access its own memory. \\
+Then there is the interesting results that says that sequential execution is
+much faster than parallel execution with CUDA. This result can only be explained
+as an error, because it is impossible that sequential execution on this large
+quantity of data is faster than parallel execution. Either there has been a
+mistake in timing the sequential execution, or something went wrong in writing
+this program.
+
 
 
 % =================================== REFERENCES ===================================
