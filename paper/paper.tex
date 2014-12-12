@@ -290,6 +290,17 @@ of better performance and scalability. In case of a fault Andrew is likely to
 lose data that was not yet saved to the server. But when everything is working
 well, Andrew is much faster and much more scalable that LOCUS.
 
+In Ceph the designers once again wanted make their system highly fault tolerant.
+They made sure data is not easily lost in case of a fault and to do this they
+only sacrificed a little performance, namely the write speed. Scalability and
+read performance are however largely unaffected by this change.
+
+We can see that on the subject of trade-offs, distributed file systems have
+developed only a little. Choices always have to be made to emphasize one aspect
+over the other. We do see that in the most recent system, Ceph, a significantly
+better trade-off is made compared to the same type of trade-off made in LOCUS
+over 20 years prior.
+
 
 
 % =================================== REFERENCES ===================================
