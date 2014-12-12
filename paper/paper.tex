@@ -190,9 +190,10 @@ Ceph is a implementation of a distributed file system that eliminates allocation
 lists entirely. Instead, file data is divided into objects, while a data
 distribution function called CRUSH assigns objects to storage devices. This way
 a look-ups are unnecessary, because any user can simply calculate the name and
-the location of a set of objects forming a file.  Using this procedure,
-meta data operations like \textit{open}, or \textit{rename}, do not need access
-to the data on the servers, but can be handled by a dedicated meta-data server.
+the location of a set of objects forming a file.  Using this procedure, meta
+data operations like \textit{open}, or \textit{rename}, do not need access to
+the data on the servers, but can be handled by a dedicated meta-data
+server\cite{weil2006ceph}.
 
 Metadata operations can take up to half of the operations of the distributed
 file system. Therefor Ceph has an aggressive prefetching algorithm to have
@@ -203,11 +204,12 @@ directory locality in the general case.
 
 Ceph implements fault tolerance, by replicating all data it has. Data is
 replicated in terms of placement groups, each of which is mapped to an ordered
-list of $n$ object storage devices (for $n$-way replication). Disadvantage of
-this system is that writes are slow, due to having to having to update all
-replicates in the system. However, this reliefs the head node of doing writes to
-all replicates.
+list of $n$ object storage devices (for $n$-way replication).
+\cite{weil2006ceph} Disadvantage of this system is that writes are slow, due to
+having to having to update all replicates in the system. However, this reliefs
+the head node of doing writes to all replicates.
 
+The major trade-off with Ceph is %...
 
 \section{LOCUS}
 
@@ -222,7 +224,19 @@ these designators are a combination of logical filegroups and the i-nodes of
 files. By keeping these designators centralised, easy access to the file system
 is guaranteed.
 
-LOCUS keeps multiple copies of the file in the system to prevent file faults.
+Fault tolerance is handled within LOCUS by keeping a policy of consistency among
+copies of a file. The policy is to allow update only in a partition that has the
+primary copy of the file. From there file is updated to its secondary copies
+after a commit has been done on the primary copy.
+
+The biggest trade-off within the LOCUS file system is that it does not support
+scalability. The scalability of the system is limited because all filegroups
+have a single synchronization site. This site keeps track of all files that are
+in the filegroup. Heavily accessed filegroups cannot keep up with the number of
+requests, if the norm gets bigger. If however the I/O operations are spread over
+the filegroups, the LOCUS file system can be fast, because locking of files is
+not required system-wide, only in the filegroup the file is in.
+
 
 \section{Andrew}
 
