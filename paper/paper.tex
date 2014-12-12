@@ -195,14 +195,14 @@ copies of a file. The policy is to allow update only in a partition that has the
 primary copy of the file. From there file is updated to its secondary copies
 after a commit has been done on the primary copy.
 
-The biggest trade-off within the LOCUS file system is that it does not support
-scalability. The scalability of the system is limited because all filegroups
-have a single synchronization site. This site keeps track of all files that are
-in the filegroup. Heavily accessed filegroups cannot keep up with the number of
-requests, if the norm gets bigger. If however the I/O operations are spread over
-the filegroups, the LOCUS file system can be fast, because locking of files is
-not required system-wide, only in the filegroup the file is in.
-
+The biggest trade-off within the LOCUS file system is that it does not perform
+well when scaled. The scalability of the system is limited because all
+filegroups have a single synchronization site. This site keeps track of all
+files that are in the filegroup. Heavily accessed filegroups cannot keep up with
+the number of requests, if the norm gets bigger. If however the I/O operations
+are spread over the filegroups, the LOCUS file system can be fast, because
+locking of files is not required system-wide, only in the filegroup the file is
+in.
 
 \section{Andrew}
 
@@ -255,7 +255,7 @@ tolerant.
 Ceph is a implementation of a distributed file system that eliminates allocation
 lists entirely. Instead, file data is divided into objects, while a data
 distribution function called CRUSH assigns objects to storage devices. This way
-a look-ups are unnecessary, because any user can simply calculate the name and
+look-ups are unnecessary, because any user can simply calculate the name and
 the location of a set of objects forming a file.  Using this procedure, meta
 data operations like \textit{open}, or \textit{rename}, do not need access to
 the data on the servers, but can be handled by a dedicated meta-data
@@ -265,7 +265,7 @@ Metadata operations can take up to half of the operations of the distributed
 file system. Therefor Ceph has an aggressive prefetching algorithm to have
 metadata in the system before it is requested.  Furthermore Ceph uses its
 knowledge of metadata popularity to provide a wide distribution for hot spots
-only when needed and with- out incurring the associated overhead and loss of
+only when needed and without incurring the associated overhead and loss of
 directory locality in the general case.
 
 Ceph implements fault tolerance, by replicating all data it has. Data is
@@ -277,9 +277,18 @@ the head node of doing writes to all replicates.
 
 The major trade-off with Ceph is %...
 
-
-
 \section{Discussion}
+As can be seen in the above sections, each implementation of a distributed file
+system focusses on different aspects. Starting with the earliest of our three
+examples, LOCUS, we see that they chose to implement better fault tolerance over
+performance when scaled. This means that LOCUS operates well when the system is
+not too large, but it cannot compare to other distributed file systems when used
+with a larger system.
+
+In Andrew we see exactly the opposite, here fault are tolerated less in favour
+of better performance and scalability. In case of a fault Andrew is likely to
+lose data that was not yet saved to the server. But when everything is working
+well, Andrew is much faster and much more scalable that LOCUS.
 
 
 
