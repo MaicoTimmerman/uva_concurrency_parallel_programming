@@ -180,7 +180,12 @@ solved.\cite{concepts}
 
 \section{Ceph}
 
-The Ceph distributed file system \cite{weil2006ceph} was initially developed late 2007
+The Ceph distributed file system \cite{weil2006ceph} was initially developed
+late 2007 by Sage Weil during his doctoral dissertation. Ceph's main goals are
+to be completely distributed without a single point of failure, scalable to the
+exabyte level, and freely-available. The data is replicated, making it fault
+tolerant.
+
 Ceph is a implementation of a distributed file system that eliminates allocation
 lists entirely. Instead, file data is divided into objects, while a data
 distribution function called CRUSH assigns objects to storage devices. This way
@@ -189,6 +194,19 @@ the location of a set of objects forming a file.  Using this procedure,
 meta data operations like \textit{open}, or \textit{rename}, do not need access
 to the data on the servers, but can be handled by a dedicated meta-data server.
 
+Metadata operations can take up to half of the operations of the distributed
+file system. Therefor Ceph has an aggressive prefetching algorithm to have
+metadata in the system before it is requested.  Furthermore Ceph uses its
+knowledge of metadata popularity to provide a wide distribution for hot spots
+only when needed and with- out incurring the associated overhead and loss of
+directory locality in the general case.
+
+Ceph implements fault tolerance, by replicating all data it has. Data is
+replicated in terms of placement groups, each of which is mapped to an ordered
+list of $n$ object storage devices (for $n$-way replication). Disadvantage of
+this system is that writes are slow, due to having to having to update all
+replicates in the system. However, this reliefs the head node of doing writes to
+all replicates.
 
 
 \section{LOCUS}
