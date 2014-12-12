@@ -210,7 +210,19 @@ all replicates.
 
 
 \section{LOCUS}
-The LOCUS distributed file system was developed in the early 1980s.
+
+The LOCUS distributed file system was developed in the early 1980s. LOCUS is a
+system that stands out due to its' features. These features include automatic
+management of replicated data, atomic file updates and more.
+
+LOCUS uses filegroups to create containers of storage sites. These filegroups
+can exist of multiple physical containers. LOCUS keeps track of files using
+i-nodes, just as UNIX filesystems do. LOCUS keeps a list of file designators,
+these designators are a combination of logical filegroups and the i-nodes of
+files. By keeping these designators centralised, easy access to the file system
+is guaranteed.
+
+LOCUS keeps multiple copies of the file in the system to prevent file faults.
 
 \section{Andrew}
 
