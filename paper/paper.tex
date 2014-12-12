@@ -152,7 +152,7 @@ In this section we take a more in depth look at what a distributed file system
 exactly is, and why it is useful. A distributed file system is a system of
 servers and clients (in some cases devices can be both server and client at the
 same time) where data is spread over multiple storage devices (servers) but can
-be accessed by clients as though it were on their own device.\cite{concepts}
+be accessed by clients as though it were on their own device. \cite{concepts}
 
 A distributed file system is particularly convenient in large corporations where
 employees each have their own account that they can use to log in to any
@@ -168,19 +168,19 @@ system in order for it to be effective. First of all a user must be able to
 access the files they are trying to access in a way that is (preferably) no
 different accessing files on a centralised file system. And a user must also be
 able to access their files located on the distributed file system from any
-machine within the system.\cite{concepts} Another very important requirement is
+machine within the system. \cite{concepts} Another very important requirement is
 of course the performance of the system. If a file system is too slow, it
 becomes impractical to use since every time a client requests access to a file
 they would have to wait for it. Another key concern is the system's fault
 tolerance. Being fault tolerant means that the system will not completely crash
 or shut down when a fault occurs, instead it should either manage the fault or
 continue functioning with reduced functionality until the fault is
-solved.\cite{concepts}
+solved. \cite{concepts}
 
 \section{LOCUS}
 
 The LOCUS distributed file system was developed in the early 1980s. LOCUS is a
-system that stands out due to its' features. These features include automatic
+system that stands out due to it's features. These features include automatic
 management of replicated data, atomic file updates and more. \cite{concepts}
 
 LOCUS uses filegroups to create containers of storage sites. These filegroups
@@ -216,18 +216,18 @@ too much when scaling up the system.\cite{andrew}
 Andrew works by using dedicated servers and clients. The clients each have local
 storage and are also able to access the shared storage located on the servers.
 The Servers are collectively responsible for managing the shared
-storage.\cite{concepts} When a client wants to retrieve a file from the shared
+storage. \cite{concepts} When a client wants to retrieve a file from the shared
 storage it will send a request to a server. Servers continuously listen for
 client connections and as soon as a client wants to connect the server creates a
 new process to handle the communication with that client. The process is only
-terminated when the client disconnects.\cite{andrew} Servers contain both data
+terminated when the client disconnects. \cite{andrew} Servers contain both data
 and links to data that exists on other servers.
 
 In Andrew universality is achieved through caching. When a file is requested it
 is put into local storage before the user can manipulate the file. This means
 that the way a user interacts with file is much the same as on a centralised
 file system, since the file is actually copied to local memory. The only
-difference is the time it takes to load a not yet cached file.\cite{concepts}
+difference is the time it takes to load a not yet cached file. \cite{concepts}
 
 Caching also plays a great part in performance. Because files are cached
 locally, data transfers between clients and servers occur less frequently. Since
@@ -235,31 +235,31 @@ data transfers to servers are very slow and local storage accesses are
 relatively fast this significantly increases performance. In addition, the
 performance when scaling the system is also very good since the clients can
 execute programs that are stored locally without any server interaction, thus
-not overloading the server with requests.\cite{andrew}
+not overloading the server with requests. \cite{andrew}
 
 A major trade-off that was made in Andrew is the fact that they sacrifice fault
 tolerance for performance. Due to the way the caching works it is rather
 difficult to recover data. Data is only synchronised with the server on a file
-open or close.\cite{andrew} So in case of a crash, any unsynchronised data will
+open or close. \cite{andrew} So in case of a crash, any unsynchronised data will
 be lost.  Of course this increases performance because less communication is
 needed, but it does make the system less tolerant of faults.
 
 \section{Ceph}
 
-The Ceph distributed file system \cite{weil2006ceph} was initially developed
-late 2007 by Sage Weil during his doctoral dissertation. Ceph's main goals are
-to be completely distributed without a single point of failure, scalable to the
-exabyte level, and freely-available. The data is replicated, making it fault
-tolerant.
+The Ceph distributed file system was initially developed late 2007 by Sage Weil
+during his doctoral dissertation. \cite{weil2006ceph} Ceph's main goals are to
+be completely distributed without a single point of failure, scalable to the
+exabyte level and freely-available. The data is replicated, making it highly
+fault tolerant.
 
 Ceph is a implementation of a distributed file system that eliminates allocation
 lists entirely. Instead, file data is divided into objects, while a data
 distribution function called CRUSH assigns objects to storage devices. This way
-look-ups are unnecessary, because any user can simply calculate the name and
-the location of a set of objects forming a file.  Using this procedure, meta
-data operations like \textit{open}, or \textit{rename}, do not need access to
-the data on the servers, but can be handled by a dedicated meta-data
-server\cite{weil2006ceph}.
+look-ups are unnecessary, because any user can simply calculate the name and the
+location of a set of objects forming a file.  Using this procedure, meta data
+operations like \textit{open}, or \textit{rename}, do not need access to the
+data on the servers, but can be handled by a dedicated meta-data server.
+\cite{weil2006ceph}
 
 Metadata operations can take up to half of the operations of the distributed
 file system. Therefor Ceph has an aggressive prefetching algorithm to have
@@ -299,10 +299,10 @@ only sacrificed a little performance, namely the write speed. Scalability and
 read performance are however largely unaffected by this change.
 
 We can see that on the subject of trade-offs, distributed file systems have
-developed only a little. Choices always have to be made to emphasize one aspect
-over the other. We do see that in the most recent system, Ceph, a significantly
-better trade-off is made compared to the same type of trade-off made in LOCUS
-over 20 years prior.
+minor changes have occured. Choices always have to be made to emphasize one
+aspect over the other. We do see that in the most recent system, Ceph, a
+significantly better trade-off is made compared to the same type of trade-off
+made in LOCUS over 20 years prior.
 
 
 
