@@ -125,7 +125,7 @@ file systems developed over the years.
 \section{Introduction}
 
 A file system is the part of a computer system that manages long term storage of
-data.  The most common file system is a centralised file system. This type of
+data. The most common file system is a centralised file system. This type of
 file system is the one we usually find in a personal computer, here files are
 stored on a single storage device at a single location.
 
@@ -197,12 +197,12 @@ after a commit has been done on the primary copy.
 
 The biggest trade-off within the LOCUS file system is that it does not perform
 well when scaled. The scalability of the system is limited because all
-filegroups have a single synchronization site. This site keeps track of all
-files that are in the filegroup. Heavily accessed filegroups cannot keep up with
-the number of requests, if the norm gets bigger. If however the I/O operations
-are spread over the filegroups, the LOCUS file system can be fast, because
-locking of files is not required system-wide, only in the filegroup the file is
-in.
+filegroups have a single synchronization site. \cite{concepts} This site keeps
+track of all files that are in the filegroup. Heavily accessed filegroups cannot
+keep up with the number of requests, if the norm gets bigger. If however the I/O
+operations are spread over the filegroups, the LOCUS file system can be fast,
+because locking of files is not required system-wide, only in the filegroup the
+file is in.
 
 \section{Andrew}
 
@@ -275,7 +275,10 @@ list of $n$ object storage devices (for $n$-way replication).
 having to having to update all replicates in the system. However, this reliefs
 the head node of doing writes to all replicates.
 
-The major trade-off with Ceph is %...
+The major trade-off with Ceph is the speed of write operations. If Ceph is used
+in a read intensive, this does not create a bottleneck. However in write
+intensive environments this can create performance issues. All clients have to
+wait for a write to complete to all replicates.
 
 \section{Discussion}
 As can be seen in the above sections, each implementation of a distributed file
