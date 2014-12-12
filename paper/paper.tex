@@ -32,10 +32,11 @@
 
 \fancypagestyle{firststyle}
 {
+    \vspace*{6cm}
     \fancyhf{}
     \renewcommand{\headrulewidth}{0pt}
     \chead{\includegraphics[width=7cm]{logoUvA}}
-    \rfoot{\small \textsc {Page \thepage\ of \pageref{LastPage}}}
+    %\rfoot{\small \textsc {Page \thepage\ of \pageref{LastPage}}}
 }
 
 \setlength{\topmargin}{-0.3in}
@@ -100,10 +101,9 @@
 % =================================== FRONT PAGE ===================================
 
 \clearpage
+\vspace*{0.5cm}
 \tableofcontents
 \clearpage
-
-
 
 
 
@@ -111,20 +111,31 @@
 
 \section{Abstract}
 
+A distributed file system is a client and server system where clients can access
+data located on the servers. The servers can be spread over multiple locations
+and should still provide reliable access to files. To do so there are a few
+requirements that need to be met: universality, performance and fault tolerance.
+In this paper our aim is to examine what trade-offs designers of distributed
+file systems made in order to make their file systems work. To do this we will
+discuss three example distributed file systems, LOCUS, Andrew and Ceph and look
+at how they met these requirements or whether they needed to compromise in some
+way. We will also compare the three to see how distributed file systems
+developed over the years.
+
 \section{Introduction}
 
 A file system is the part of a computer system that manages long term storage of
 data.  The most common file system is a centralised file system. This type of
 file system is the one we usually find in a personal computer, here files are
-stored on a single storage device at a single location.\\
-Another type of file system is the distributed file system, in these file
-systems data can be stored on multiple storage devices that also do not
-necessarily need to be at the same location. These file systems are useful when
-multiple people need to share their data quickly and securely.\\
-In this paper our aim is to find out what the trade-offs are exactly  when
-choosing a distributed file system over a centralised file system. We will do
-this by looking at various examples and comparing the properties of a
-distributed file system to those of a centralised file system.\\
+stored on a single storage device at a single location.\\ Another type of file
+system is the distributed file system, in these file systems data can be stored
+on multiple storage devices that also do not necessarily need to be at the same
+location. These file systems are useful when multiple people need to share their
+data quickly and securely.\\ In this paper our aim is to find out what the
+trade-offs are exactly  when choosing a distributed file system over a
+centralised file system. And also how distributed file systems developed over
+the years. We will do this by looking at three examples and comparing the
+properties of those to each other and to a centralised file system.\\
 
 In the next section we take a closer look at what a distributed file system is,
 and why it is useful. Then we will discuss in short what the requirements are
@@ -134,23 +145,25 @@ see what trade-offs they have had to make. Then the most important trade-offs
 will be summarised and discussion in the last section of this paper.
 
 \section{The Distributed File System}
+
 In this section we take a more in depth look at what a distributed file system
 exactly is, and why it is useful. A distributed file system is a system of
 servers and clients (in some cases devices can be both server and client at the
-same time) where data is spread over multiple storage devices (servers) but can be
-accessed by clients as though it were on their own device. \cite{concepts} A
+same time) where data is spread over multiple storage devices (servers) but can
+be accessed by clients as though it were on their own device. \cite{concepts} A
 distributed file system is particularly convenient in large corporations where
-employees each have their own account that they can use to log in to any computer
-at the office. The employees will want to access their files regardless of which
-computer they are logged in from. A distributed file system can make sure every
-employee will have access to their files as though the files were on the
-computer currently being used.
+employees each have their own account that they can use to log in to any
+computer at the office. The employees will want to access their files regardless
+of which computer they are logged in from. A distributed file system can make
+sure every employee will have access to their files as though the files were on
+the computer currently being used.
 
 \section{Requirements}
+
 Here we will discuss in short what the requirements are of a distributed file
 system in order for it to be effective. First of all a user must be able to
 access the files they are trying to access in a way that is no different
-accessing files on a centralised file system. Then a user must also be able to
+accessing files on a centralised file system. And a user must also be able to
 access their files located on the distributed file system from any machine
 within the system. \cite{concepts} Another very important requirement is of
 course the performance of the system. If a file system is too slow, it becomes
@@ -161,13 +174,38 @@ down when a fault occurs. Instead it should either manage the fault, or continue
 functioning with reduced functionality until the fault is solved.
 \cite{concepts}
 
-\section{Examples}
-\subsection{Ceph}
+\section{Ceph}
 
+The Ceph distributed file system \cite{ceph} was initially developed late 2007
 Ceph is a implementation of a distributed file system that eliminates allocation
-lists entirely. Instead, file data is striped onto predictably named objects,
-while a special-purpose data distribution function called CRUSH assigns
-objects to storage devices.  \subsection{Example 2}
+lists entirely. Instead, file data is divided into objects, while a data
+distribution function called CRUSH assigns objects to storage devices. This way
+a look-ups are unnecessary, because any user can simply calculate the name and
+the location of a set of objects forming a file.  Using this procedure,
+meta data operations like \textit{open}, or \textit{rename}, do not need access
+to the data on the servers, but can be handled by a dedicated meta-data server.
+
+
+
+\section{LOCUS}
+The LOCUS distributed file system was developed in the early 1980s.
+
+\section{Andrew}
+
+The distributed file system used by the Andrew distributed computing environment
+(hereafter referred to as simply Andrew) started development in 1983, just after
+the LOCUS file system was developed. In creating Andrew the designers main goals
+were performance and scalability. This means that Andrew had to provide a
+relatively good performance and also make sure the performance does not suffer
+too much when scaling the system.\cite{andrew} \\
+Andrew works by using a server that listens for client connections. As soon as a
+client wants to connect the server will create a new process handling the
+communication with that client and continues listening. The process is only
+terminated when the client disconnects. \cite{andrew} Servers contain both data
+and links to data that exists on other servers.
+
+
+
 
 \section{Discussion}
 
@@ -176,7 +214,7 @@ objects to storage devices.  \subsection{Example 2}
 % =================================== REFERENCES ===================================
 
 \clearpage
-\bibliographystyle{unsrt}
+\bibliographystyle{apalike}
 \bibliography{bib}
 
 \end{document}
