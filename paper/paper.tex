@@ -257,6 +257,13 @@ performance when scaling the system is also very good since the clients can
 execute programs that are stored locally without any server interaction, thus
 not overloading the server with requests.\cite{andrew}
 
+A major trade-off that was made in Andrew is the fact that they sacrifice fault
+tolerance for performance. Due to the way the caching works it is rather
+difficult to recover data. Data is only synchronised with the server on a file
+open or close.\cite{andrew} So in case of a crash, any unsynchronised data will
+be lost.  Of course this increases performance because less communication is
+needed, but it does make the system less tolerant of faults.
+
 
 
 
