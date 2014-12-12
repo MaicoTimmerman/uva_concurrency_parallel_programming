@@ -134,18 +134,17 @@ systems data can be stored on multiple storage devices that also do not
 necessarily need to be at the same location. These file systems are useful when
 multiple people need to share their data quickly and securely.
 
-In this paper our aim is to find out what the trade-offs are exactly  when
-choosing a distributed file system over a centralised file system. And also how
-distributed file systems developed over the years. We will do this by looking at
-three examples and comparing the properties of those to each other and to a
-centralised file system.
+In this paper our aim is to find out what trade-offs were made exactly in the
+making of different distributed file systems. In addition we will look at how
+distributed file systems have developed over the years. We will do this by
+looking at three examples and comparing the properties of those to each other.
 
 In the next section we take a closer look at what a distributed file system is,
 and why it is useful. Then we will discuss in short what the requirements are
 for a distributed file system to be effective and useful. In the section
 thereafter we will look at a couple of examples of distributed file systems to
 see what trade-offs they have had to make. Then the most important trade-offs
-will be summarised and discussion in the last section of this paper.
+will be summarised and discussed in the last section of this paper.
 
 \section{The Distributed File System}
 
@@ -178,39 +177,6 @@ or shut down when a fault occurs, instead it should either manage the fault or
 continue functioning with reduced functionality until the fault is
 solved.\cite{concepts}
 
-\section{Ceph}
-
-The Ceph distributed file system \cite{weil2006ceph} was initially developed
-late 2007 by Sage Weil during his doctoral dissertation. Ceph's main goals are
-to be completely distributed without a single point of failure, scalable to the
-exabyte level, and freely-available. The data is replicated, making it fault
-tolerant.
-
-Ceph is a implementation of a distributed file system that eliminates allocation
-lists entirely. Instead, file data is divided into objects, while a data
-distribution function called CRUSH assigns objects to storage devices. This way
-a look-ups are unnecessary, because any user can simply calculate the name and
-the location of a set of objects forming a file.  Using this procedure, meta
-data operations like \textit{open}, or \textit{rename}, do not need access to
-the data on the servers, but can be handled by a dedicated meta-data
-server\cite{weil2006ceph}.
-
-Metadata operations can take up to half of the operations of the distributed
-file system. Therefor Ceph has an aggressive prefetching algorithm to have
-metadata in the system before it is requested.  Furthermore Ceph uses its
-knowledge of metadata popularity to provide a wide distribution for hot spots
-only when needed and with- out incurring the associated overhead and loss of
-directory locality in the general case.
-
-Ceph implements fault tolerance, by replicating all data it has. Data is
-replicated in terms of placement groups, each of which is mapped to an ordered
-list of $n$ object storage devices (for $n$-way replication).
-\cite{weil2006ceph} Disadvantage of this system is that writes are slow, due to
-having to having to update all replicates in the system. However, this reliefs
-the head node of doing writes to all replicates.
-
-The major trade-off with Ceph is %...
-
 \section{LOCUS}
 
 The LOCUS distributed file system was developed in the early 1980s. LOCUS is a
@@ -229,14 +195,14 @@ copies of a file. The policy is to allow update only in a partition that has the
 primary copy of the file. From there file is updated to its secondary copies
 after a commit has been done on the primary copy.
 
-The biggest trade-off within the LOCUS file system is that it does not support
-scalability. The scalability of the system is limited because all filegroups
-have a single synchronization site. This site keeps track of all files that are
-in the filegroup. Heavily accessed filegroups cannot keep up with the number of
-requests, if the norm gets bigger. If however the I/O operations are spread over
-the filegroups, the LOCUS file system can be fast, because locking of files is
-not required system-wide, only in the filegroup the file is in. \cite{concepts}
-
+The biggest trade-off within the LOCUS file system is that it does not perform
+well when scaled. The scalability of the system is limited because all
+filegroups have a single synchronization site. This site keeps track of all
+files that are in the filegroup. Heavily accessed filegroups cannot keep up with
+the number of requests, if the norm gets bigger. If however the I/O operations
+are spread over the filegroups, the LOCUS file system can be fast, because
+locking of files is not required system-wide, only in the filegroup the file is
+in.
 
 \section{Andrew}
 
@@ -245,11 +211,11 @@ The distributed file system used by the Andrew distributed computing environment
 the LOCUS file system was developed. In creating Andrew the designers main goals
 were performance and scalability. This means that Andrew had to provide a
 relatively good performance and also make sure the performance does not suffer
-too much when scaling the system.\cite{andrew}
+too much when scaling up the system.\cite{andrew}
 
 Andrew works by using dedicated servers and clients. The clients each have local
-storage and are also able to access the shared storage on the servers. The
-Servers are collectively responsible for managing the shared
+storage and are also able to access the shared storage located on the servers.
+The Servers are collectively responsible for managing the shared
 storage.\cite{concepts} When a client wants to retrieve a file from the shared
 storage it will send a request to a server. Servers continuously listen for
 client connections and as soon as a client wants to connect the server creates a
@@ -278,12 +244,51 @@ open or close.\cite{andrew} So in case of a crash, any unsynchronised data will
 be lost.  Of course this increases performance because less communication is
 needed, but it does make the system less tolerant of faults.
 
+\section{Ceph}
 
+The Ceph distributed file system \cite{weil2006ceph} was initially developed
+late 2007 by Sage Weil during his doctoral dissertation. Ceph's main goals are
+to be completely distributed without a single point of failure, scalable to the
+exabyte level, and freely-available. The data is replicated, making it fault
+tolerant.
 
+Ceph is a implementation of a distributed file system that eliminates allocation
+lists entirely. Instead, file data is divided into objects, while a data
+distribution function called CRUSH assigns objects to storage devices. This way
+look-ups are unnecessary, because any user can simply calculate the name and
+the location of a set of objects forming a file.  Using this procedure, meta
+data operations like \textit{open}, or \textit{rename}, do not need access to
+the data on the servers, but can be handled by a dedicated meta-data
+server\cite{weil2006ceph}.
 
+Metadata operations can take up to half of the operations of the distributed
+file system. Therefor Ceph has an aggressive prefetching algorithm to have
+metadata in the system before it is requested.  Furthermore Ceph uses its
+knowledge of metadata popularity to provide a wide distribution for hot spots
+only when needed and without incurring the associated overhead and loss of
+directory locality in the general case.
 
+Ceph implements fault tolerance, by replicating all data it has. Data is
+replicated in terms of placement groups, each of which is mapped to an ordered
+list of $n$ object storage devices (for $n$-way replication).
+\cite{weil2006ceph} Disadvantage of this system is that writes are slow, due to
+having to having to update all replicates in the system. However, this reliefs
+the head node of doing writes to all replicates.
+
+The major trade-off with Ceph is %...
 
 \section{Discussion}
+As can be seen in the above sections, each implementation of a distributed file
+system focusses on different aspects. Starting with the earliest of our three
+examples, LOCUS, we see that they chose to implement better fault tolerance over
+performance when scaled. This means that LOCUS operates well when the system is
+not too large, but it cannot compare to other distributed file systems when used
+with a larger system.
+
+In Andrew we see exactly the opposite, here fault are tolerated less in favour
+of better performance and scalability. In case of a fault Andrew is likely to
+lose data that was not yet saved to the server. But when everything is working
+well, Andrew is much faster and much more scalable that LOCUS.
 
 
 
