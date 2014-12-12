@@ -114,28 +114,31 @@
 A distributed file system is a client and server system where clients can access
 data located on the servers. The servers can be spread over multiple locations
 and should still provide reliable access to files. To do so there are a few
-requirements that need to be met: universality, performance and fault tolerance.
-In this paper our aim is to examine what trade-offs designers of distributed
-file systems made in order to make their file systems work. To do this we will
-discuss three example distributed file systems, LOCUS, Andrew and Ceph and look
-at how they met these requirements or whether they needed to compromise in some
-way. We will also compare the three to see how distributed file systems
-developed over the years.
+requirements that need to be met: universality, performance, and fault
+tolerance.  In this paper our aim is to examine what trade-offs designers of
+distributed file systems made in order to make their file systems work. To do
+this we will discuss three example distributed file systems, LOCUS, Andrew and
+Ceph and look at how they met these requirements or whether they needed to
+compromise in some way. We will also compare the three to see how distributed
+file systems developed over the years.
 
 \section{Introduction}
 
 A file system is the part of a computer system that manages long term storage of
 data.  The most common file system is a centralised file system. This type of
 file system is the one we usually find in a personal computer, here files are
-stored on a single storage device at a single location.\\ Another type of file
-system is the distributed file system, in these file systems data can be stored
-on multiple storage devices that also do not necessarily need to be at the same
-location. These file systems are useful when multiple people need to share their
-data quickly and securely.\\ In this paper our aim is to find out what the
-trade-offs are exactly  when choosing a distributed file system over a
-centralised file system. And also how distributed file systems developed over
-the years. We will do this by looking at three examples and comparing the
-properties of those to each other and to a centralised file system.\\
+stored on a single storage device at a single location.
+
+Another type of file system is the distributed file system, in these file
+systems data can be stored on multiple storage devices that also do not
+necessarily need to be at the same location. These file systems are useful when
+multiple people need to share their data quickly and securely.
+
+In this paper our aim is to find out what the trade-offs are exactly  when
+choosing a distributed file system over a centralised file system. And also how
+distributed file systems developed over the years. We will do this by looking at
+three examples and comparing the properties of those to each other and to a
+centralised file system.
 
 In the next section we take a closer look at what a distributed file system is,
 and why it is useful. Then we will discuss in short what the requirements are
@@ -150,8 +153,9 @@ In this section we take a more in depth look at what a distributed file system
 exactly is, and why it is useful. A distributed file system is a system of
 servers and clients (in some cases devices can be both server and client at the
 same time) where data is spread over multiple storage devices (servers) but can
-be accessed by clients as though it were on their own device. \cite{concepts} A
-distributed file system is particularly convenient in large corporations where
+be accessed by clients as though it were on their own device.\cite{concepts}
+
+A distributed file system is particularly convenient in large corporations where
 employees each have their own account that they can use to log in to any
 computer at the office. The employees will want to access their files regardless
 of which computer they are logged in from. A distributed file system can make
@@ -162,17 +166,17 @@ the computer currently being used.
 
 Here we will discuss in short what the requirements are of a distributed file
 system in order for it to be effective. First of all a user must be able to
-access the files they are trying to access in a way that is no different
-accessing files on a centralised file system. And a user must also be able to
-access their files located on the distributed file system from any machine
-within the system. \cite{concepts} Another very important requirement is of
-course the performance of the system. If a file system is too slow, it becomes
-impractical to use since every time a client requests access to a file they
-would have to wait for it. At the same time the file system also needs to be
-fault tolerant, this means that the system will not completely crash or shut
-down when a fault occurs. Instead it should either manage the fault, or continue
-functioning with reduced functionality until the fault is solved.
-\cite{concepts}
+access the files they are trying to access in a way that is (preferably) no
+different accessing files on a centralised file system. And a user must also be
+able to access their files located on the distributed file system from any
+machine within the system.\cite{concepts} Another very important requirement is
+of course the performance of the system. If a file system is too slow, it
+becomes impractical to use since every time a client requests access to a file
+they would have to wait for it. Another key concern is the system's fault
+tolerance. Being fault tolerant means that the system will not completely crash
+or shut down when a fault occurs, instead it should either manage the fault or
+continue functioning with reduced functionality until the fault is
+solved.\cite{concepts}
 
 \section{Ceph}
 
@@ -197,12 +201,33 @@ The distributed file system used by the Andrew distributed computing environment
 the LOCUS file system was developed. In creating Andrew the designers main goals
 were performance and scalability. This means that Andrew had to provide a
 relatively good performance and also make sure the performance does not suffer
-too much when scaling the system.\cite{andrew} \\
-Andrew works by using a server that listens for client connections. As soon as a
-client wants to connect the server will create a new process handling the
-communication with that client and continues listening. The process is only
-terminated when the client disconnects. \cite{andrew} Servers contain both data
+too much when scaling the system.\cite{andrew}
+
+Andrew works by using dedicated servers and clients. The clients each have local
+storage and are also able to access the shared storage on the servers. The
+Servers are collectively responsible for managing the shared
+storage.\cite{concepts} When a client wants to retrieve a file from the shared
+storage it will send a request to a server. Servers continuously listen for
+client connections and as soon as a client wants to connect the server creates a
+new process to handle the communication with that client. The process is only
+terminated when the client disconnects.\cite{andrew} Servers contain both data
 and links to data that exists on other servers.
+
+In Andrew universality is achieved through caching. When a file is requested it
+is put into local storage before the user can manipulate the file. This means
+that the way a user interacts with file is much the same as on a centralised
+file system, since the file is actually copied to local memory. The only
+difference is the time it takes to load a not yet cached file.\cite{concepts}
+
+Caching also plays a great part in performance. Because files are cached
+locally, data transfers between clients and servers occur less frequently. Since
+data transfers to servers are very slow and local storage accesses are
+relatively fast this significantly increases performance. In addition, the
+performance when scaling the system is also very good since the clients can
+execute programs that are stored locally without any server interaction, thus
+not overloading the server with requests.\cite{andrew}
+
+
 
 
 
