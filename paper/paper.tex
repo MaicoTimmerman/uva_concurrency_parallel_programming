@@ -174,18 +174,25 @@ down when a fault occurs. Instead it should either manage the fault, or continue
 functioning with reduced functionality until the fault is solved.
 \cite{concepts}
 
-\section{Distributed File System Examples}
-\subsection{LOCUS}
+\section{LOCUS}
 The LOCUS distributed file system was developed in the early 1980s.
 
-\subsection{Andrew}
+\section{Andrew}
 
 The distributed file system used by the Andrew distributed computing environment
 (hereafter referred to as simply Andrew) started development in 1983, just after
-the LOCUS file system was developed.
+the LOCUS file system was developed. In creating Andrew the designers main goals
+were performance and scalability. This means that Andrew had to provide a
+relatively good performance and also make sure the performance does not suffer
+too much when scaling the system.\cite{andrew} \\
+Andrew works by using a server that listens for client connections. As soon as a
+client wants to connect the server will create a new process handling the
+communication with that client and continues listening. The process is only
+terminated when the client disconnects. \cite{andrew} Servers contain both data
+and links to data that exists on other servers.
 
 
-\subsection{Ceph}
+\section{Ceph}
 
 
 \section{Discussion}
