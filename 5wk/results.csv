@@ -1,0 +1,8 @@
+Before:
+GPU: 655536 punten: 0.56 ms
+CPU: 655536 punten: 4.3  ms
+
+After:
+GPU: 655536 punten: 40.6 ms
+CPU: 655536 punten: 4.3  ms
+

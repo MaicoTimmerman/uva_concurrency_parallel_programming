@@ -126,7 +126,7 @@ file systems developed over the years.
 \section{Introduction}
 
 A file system is the part of a computer system that manages long term storage of
-data. The most common file system is a centralised file system. This type of
+data. The most common file system is a centralized file system. This type of
 file system is the one we usually find in a personal computer, here files are
 stored on a single storage device at a single location.
 
@@ -145,7 +145,7 @@ and why it is useful. Then we will discuss in short what the requirements are
 for a distributed file system to be effective and useful. In the section
 thereafter we will look at a couple of examples of distributed file systems to
 see what trade-offs they have had to make. Then the most important trade-offs
-will be summarised and discussed in the last section of this paper.
+will be summarized and discussed in the last section of this paper.
 
 \section{The Distributed File System}
 
@@ -167,7 +167,7 @@ the computer currently being used.
 Here we will discuss in short what the requirements are of a distributed file
 system in order for it to be effective. First of all a user must be able to
 access the files they are trying to access in a way that is (preferably) no
-different accessing files on a centralised file system. And a user must also be
+different accessing files on a centralized file system. And a user must also be
 able to access their files located on the distributed file system from any
 machine within the system. \citep{concepts} Another very important requirement is
 of course the performance of the system. If a file system is too slow, it
@@ -184,11 +184,11 @@ The LOCUS distributed file system was developed in the early 1980s. LOCUS is a
 system that stands out due to it's features. These features include automatic
 management of replicated data, atomic file updates and more. \citep{concepts}
 
-LOCUS uses filegroups to create containers of storage sites. These filegroups
+LOCUS uses file-groups to create containers of storage sites. These file-groups
 can exist of multiple physical containers. LOCUS keeps track of files using
-i-nodes, just as UNIX filesystems do. LOCUS keeps a list of file designators,
-these designators are a combination of logical filegroups and the i-nodes of
-files. \citep{concepts} By keeping these designators centralised, easy access to
+i-nodes, just as UNIX file-systems do. LOCUS keeps a list of file designators,
+these designators are a combination of logical file-groups and the i-nodes of
+files. \citep{concepts} By keeping these desiccators centralized, easy access to
 the file system is guaranteed.
 
 Fault tolerance is handled within LOCUS by keeping a policy of consistency among
@@ -198,10 +198,10 @@ after a commit has been done on the primary copy.
 
 The biggest trade-off within the LOCUS file system is that it does not perform
 well when scaled. The scalability of the system is limited because all
-filegroups have a single synchronization site. \citep{concepts} This site keeps
-track of all files that are in the filegroup. Heavily accessed filegroups cannot
+file-groups have a single synchronization site. \citep{concepts} This site keeps
+track of all files that are in the file-group. Heavily accessed file-groups cannot
 keep up with the number of requests, if the norm gets bigger. If however the I/O
-operations are spread over the filegroups, the LOCUS file system can be fast,
+operations are spread over the file-groups, the LOCUS file system can be fast,
 because locking of files is not required system-wide, only in the filegroup the
 file is in.
 
